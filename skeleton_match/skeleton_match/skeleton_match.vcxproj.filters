@@ -42,7 +42,7 @@
     <ClInclude Include="GraphMatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GraphNodeCompare.h">
+    <ClInclude Include="GraphNodeMatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,7 +68,7 @@
     <ClCompile Include="GraphMatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GraphNodeCompare.cpp">
+    <ClCompile Include="GraphNodeMatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

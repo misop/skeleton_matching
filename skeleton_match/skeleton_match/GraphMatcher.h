@@ -1,6 +1,6 @@
 #pragma once
 #include "SkeletonGraph.h"
-#include "GraphNodeCompare.h"
+#include "GraphNodeMatch.h"
 
 class GraphMatcher
 {
@@ -10,7 +10,7 @@ public:
 	int solutions;
 	int ignore;
 	float bestScore;
-	GraphNodeCompare *comparator;
+	GraphNodeMatch *comparator;
 
 	vector<float> matchingScore;
 	vector<int> bestMatching;
@@ -20,10 +20,10 @@ public:
 	GraphMatcher(void);
 	~GraphMatcher(void);
 
-	void MatchGraphs(SkeletonGraph* match, SkeletonGraph* to, GraphNodeCompare* _comparator = NULL, int _solutions = 1, int _ignore = 0);
+	void MatchGraphs(SkeletonGraph* match, SkeletonGraph* to, GraphNodeMatch* _comparator = NULL, int _solutions = 1, int _ignore = 0);
 	void GenerateMatchings();
 	void Backtrack(int num, vector<int>& matching);
-	bool CanMatch(int a, int b);
+	bool CanMatch(int a, int b, vector<int>& matching);
 	int MatchLeaf(int a, int b, vector<int>& matching);
 	void FinishMatching(vector<int>& proposedMatching);
 	float ValueMatching(vector<int>& matching);

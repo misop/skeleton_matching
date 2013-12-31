@@ -72,3 +72,13 @@ bool SkeletonGraph::AreNeighbors(int i, int j, GraphEdge& edge) {
 
 	return false;
 }
+
+bool SkeletonGraph::AreNeighbors(int i, int j) {
+	for (int k = 0; k < nodes[i]->neighborhood.size(); k++) {
+		if (nodes[i]->neighborhood[k]->id == j) {
+			return true;
+		}
+	}
+
+	return false;
+}

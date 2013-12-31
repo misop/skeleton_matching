@@ -18,5 +18,6 @@ public:
 	void CreateEdge(int i, int j, GraphEdge edge);
 	void FreeNodes();
 	bool AreNeighbors(int i, int j, GraphEdge& edge);
+	bool AreNeighbors(int i, int j);
 };
 

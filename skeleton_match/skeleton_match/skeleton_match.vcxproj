@@ -83,7 +83,7 @@
   <ItemGroup>
     <ClInclude Include="GraphEdge.h" />
     <ClInclude Include="GraphMatcher.h" />
-    <ClInclude Include="GraphNodeCompare.h" />
+    <ClInclude Include="GraphNodeMatch.h" />
     <ClInclude Include="m_math.h" />
     <ClInclude Include="SkeletonGraph.h" />
     <ClInclude Include="SkeletonGraphNode.h" />
@@ -93,7 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraphMatcher.cpp" />
-    <ClCompile Include="GraphNodeCompare.cpp" />
+    <ClCompile Include="GraphNodeMatch.cpp" />
     <ClCompile Include="m_math.cpp" />
     <ClCompile Include="SkeletonGraph.cpp" />
     <ClCompile Include="SkeletonGraphNode.cpp" />

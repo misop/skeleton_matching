@@ -11,10 +11,10 @@ GraphMatcher::~GraphMatcher(void)
 {
 }
 
-void GraphMatcher::MatchGraphs(SkeletonGraph* match, SkeletonGraph* to, GraphNodeCompare* _comparator, int _solutions, int _ignore) {
+void GraphMatcher::MatchGraphs(SkeletonGraph* match, SkeletonGraph* to, GraphNodeMatch* _comparator, int _solutions, int _ignore) {
 	A = match;
 	B = to;
-	GraphNodeCompare* comp = new GraphNodeCompare();
+	GraphNodeMatch* comp = new GraphNodeMatch();
 	comparator = _comparator;
 	if (comparator == NULL) comparator = comp;
 	solutions = max(1, _solutions);
@@ -34,12 +34,12 @@ void GraphMatcher::GenerateMatchings() {
 }
 
 void GraphMatcher::Backtrack(int num, vector<int>& matching) {
-	if (matching.size() == A->branchNodes.size()) {
+	if (matching.size() == A->nodes.size()) {
 		FinishMatching(matching);
 	} else {
 		for (int numb = 0; numb <= B->nodes.size(); numb++) {
 			int i = numb - 1;
-			if (CanMatch(num, i)) {
+			if (CanMatch(num, i, matching)) {
 				matching.push_back(i);
 				used.push_back(i);
 				if (i == -1) ignore--;
@@ -52,14 +52,14 @@ void GraphMatcher::Backtrack(int num, vector<int>& matching) {
 	}
 }
 
-bool GraphMatcher::CanMatch(int a, int b) {
+bool GraphMatcher::CanMatch(int a, int b, vector<int>& matching) {
 	if (b == -1) {
 		if (ignore < 0 || ignore > 0)
 			return true;
 		else
 			return false;
 	} else {
-		if (!In(b, used) && comparator->CanMatch(A->nodes[a], B->nodes[b])) {
+		if (!In(b, used) && comparator->CanMatch(A, B, a, b, matching)) {
 			return true;
 		}
 	}
@@ -68,7 +68,7 @@ bool GraphMatcher::CanMatch(int a, int b) {
 }
 
 void GraphMatcher::FinishMatching(vector<int>& proposedMatching) {
-	//proposed matching only matches branch nodes
+	/*//proposed matching only matches branch nodes
 	//we need to create matching for leaf nodes
 	//empty matching
 	vector<int> finalMatching;
@@ -103,7 +103,16 @@ void GraphMatcher::FinishMatching(vector<int>& proposedMatching) {
 		}
 	}
 	//and restore used
-	used = tempUsed;
+	used = tempUsed;*/
+	float error = ValueMatching(proposedMatching);
+	if (bestMatchings.size() < solutions || error < matchingScore.back()) {
+		//bestScore = error;
+		//bestMatching = finalMatching;
+		InsertOrdered(error, proposedMatching);
+		if (bestMatchings.size() > solutions) {
+			bestMatchings.resize(solutions);
+		}
+	}
 }
 
 void GraphMatcher::InsertOrdered(float num, vector<int>& matching) {
