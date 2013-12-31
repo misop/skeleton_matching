@@ -11,12 +11,17 @@ GraphMatcher::~GraphMatcher(void)
 {
 }
 
-void GraphMatcher::MatchGraphs(SkeletonGraph* match, SkeletonGraph* to, int _solutions, int _ignore) {
+void GraphMatcher::MatchGraphs(SkeletonGraph* match, SkeletonGraph* to, GraphNodeCompare* _comparator, int _solutions, int _ignore) {
 	A = match;
 	B = to;
+	GraphNodeCompare* comp = new GraphNodeCompare();
+	comparator = _comparator;
+	if (comparator == NULL) comparator = comp;
 	solutions = max(1, _solutions);
 	ignore = _ignore;
 	GenerateMatchings();
+
+	delete comp;
 }
 
 void GraphMatcher::GenerateMatchings() {
@@ -24,19 +29,13 @@ void GraphMatcher::GenerateMatchings() {
 	matching.reserve(A->nodes.size());
 	used.clear();
 	bestMatching.clear();
-	bestScore = 9999999;
+	bestScore = 0;
 	Backtrack(0, matching);
 }
 
 void GraphMatcher::Backtrack(int num, vector<int>& matching) {
 	if (matching.size() == A->branchNodes.size()) {
-		vector<int> finalMatching;
-		FinishMatching(matching, finalMatching);
-		float error = ValueMatching(finalMatching);
-		if (bestMatching.size() == 0 || error < bestScore) {
-			bestScore = error;
-			bestMatching = finalMatching;
-		}
+		FinishMatching(matching);
 	} else {
 		for (int numb = 0; numb <= B->nodes.size(); numb++) {
 			int i = numb - 1;
@@ -60,7 +59,7 @@ bool GraphMatcher::CanMatch(int a, int b) {
 		else
 			return false;
 	} else {
-		if (!In(b, used) && A->nodes[a]->neighborhood.size() == B->nodes[b]->neighborhood.size()) {
+		if (!In(b, used) && comparator->CanMatch(A->nodes[a], B->nodes[b])) {
 			return true;
 		}
 	}
@@ -68,11 +67,11 @@ bool GraphMatcher::CanMatch(int a, int b) {
 	return false;
 }
 
-void GraphMatcher::FinishMatching(vector<int>& proposedMatching, vector<int>& finalMatching) {
+void GraphMatcher::FinishMatching(vector<int>& proposedMatching) {
 	//proposed matching only matches branch nodes
 	//we need to create matching for leaf nodes
 	//empty matching
-	finalMatching.clear();
+	vector<int> finalMatching;
 	finalMatching.reserve(A->nodes.size());
 	for (int i = 0; i < A->nodes.size(); i++) {
 		finalMatching.push_back(-1);
@@ -81,6 +80,8 @@ void GraphMatcher::FinishMatching(vector<int>& proposedMatching, vector<int>& fi
 	for (int i = 0; i < proposedMatching.size(); i++) {
 		finalMatching[A->branchNodes[i]->id] = proposedMatching[i];
 	}
+	//then add all leaf combinations
+	vector<int> tempUsed = used;
 	for (int i = 0; i < A->branchNodes.size(); i++) {
 		for (int j = 0; j < A->branchNodes[i]->neighborhood.size(); j++) {
 			SkeletonGraphNode* node = A->branchNodes[i]->neighborhood[j];
@@ -90,6 +91,36 @@ void GraphMatcher::FinishMatching(vector<int>& proposedMatching, vector<int>& fi
 				finalMatching[node->id] = idx;
 			}
 		}
+	}
+	//for now
+	float error = ValueMatching(finalMatching);
+	if (bestMatchings.size() < solutions || error < matchingScore.back()) {
+		//bestScore = error;
+		//bestMatching = finalMatching;
+		InsertOrdered(error, finalMatching);
+		if (bestMatchings.size() > solutions) {
+			bestMatchings.resize(solutions);
+		}
+	}
+	//and restore used
+	used = tempUsed;
+}
+
+void GraphMatcher::InsertOrdered(float num, vector<int>& matching) {
+	if (matchingScore.size() == 0 || num >= matchingScore.back()) {
+		matchingScore.push_back(num);
+		bestMatchings.push_back(matching);
+		return;
+	}
+	vector<vector<int> >::iterator it_2 = bestMatchings.begin();
+	for (vector<float>::iterator it = matchingScore.begin(); it != matchingScore.end(); it++) {
+		if ((*it) > num) {
+			matchingScore.insert(it, num);
+			bestMatchings.insert(it_2, matching);
+			break;
+		}
+
+		it_2++;
 	}
 }
 
