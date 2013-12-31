@@ -1,0 +1,74 @@
+#include "stdafx.h"
+#include "SkeletonGraph.h"
+#include <deque>
+
+SkeletonGraph::SkeletonGraph(void)
+{
+}
+
+
+SkeletonGraph::~SkeletonGraph(void)
+{
+	FreeNodes();
+}
+
+//number of nodes as would return vector.size()
+void SkeletonGraph::CreateGraphFromSkeleton(SkeletonNode* root, int numOfNodes) {
+	FreeNodes();
+	nodes.reserve(numOfNodes);
+	for (int i = 0; i < numOfNodes; i++) {
+		SkeletonGraphNode* node = new SkeletonGraphNode(i);
+		nodes.push_back(node);
+	}
+
+	deque<SkeletonNode*> queue;
+	queue.push_back(root);
+
+	while (!queue.empty()) {
+		SkeletonNode* sklNode = queue.front();
+		queue.pop_front();
+		//edges are not oriented and parent would handle parent edge so we add only child edges
+		for (int i = 0; i < sklNode->nodes.size(); i++) {
+			CreateEdge(sklNode->id, sklNode->nodes[i]->id, GraphEdge(sklNode->betweenNodes[i], sklNode->dists[i]));
+			queue.push_back(sklNode->nodes[i]);
+		}
+	}
+	CollectBranchNodes();
+}
+
+void SkeletonGraph::CollectBranchNodes() {
+	branchNodes.clear();
+	for (int i = 0; i < nodes.size(); i++) {
+		if (nodes[i]->neighborhood.size() > 2) {
+			branchNodes.push_back(nodes[i]);
+		}
+	}
+}
+
+void SkeletonGraph::AddNode(SkeletonGraphNode* node) {
+	nodes.push_back(node);
+}
+
+void SkeletonGraph::CreateEdge(int i, int j, GraphEdge edge) {
+	nodes[i]->AddNeighborWithEdge(nodes[j], edge);
+	nodes[j]->AddNeighborWithEdge(nodes[i], edge);
+}
+
+void SkeletonGraph::FreeNodes() {
+	for (int i = 0; i < nodes.size(); i++) {
+		delete nodes[i];
+		nodes[i] = NULL;
+	}
+	nodes.clear();
+}
+
+bool SkeletonGraph::AreNeighbors(int i, int j, GraphEdge& edge) {
+	for (int k = 0; k < nodes[i]->neighborhood.size(); k++) {
+		if (nodes[i]->neighborhood[k]->id == j) {
+			edge = nodes[i]->edges[k];
+			return true;
+		}
+	}
+
+	return false;
+}
