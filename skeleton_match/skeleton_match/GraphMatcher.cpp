@@ -4,24 +4,36 @@
 
 GraphMatcher::GraphMatcher(void)
 {
+	comparator = new GraphNodeMatch();
+	evaluator = new GraphMatchingEvaluator();
+	own = true;
 }
 
+GraphMatcher::GraphMatcher(GraphNodeMatch* _comparator, GraphMatchingEvaluator* _evaluator) {
+	comparator = _comparator;
+	evaluator = _evaluator;
+	own = false;
+}
 
 GraphMatcher::~GraphMatcher(void)
 {
+	if (own) {
+		delete comparator;
+		delete evaluator;
+	}
 }
 
-void GraphMatcher::MatchGraphs(SkeletonGraph* match, SkeletonGraph* to, GraphNodeMatch* _comparator, int _solutions, int _ignore) {
+void GraphMatcher::MatchGraphs(SkeletonGraph* match, SkeletonGraph* to, int _solutions, int _ignore) {
 	A = match;
 	B = to;
 	GraphNodeMatch* comp = new GraphNodeMatch();
-	comparator = _comparator;
-	if (comparator == NULL) comparator = comp;
 	solutions = max(1, _solutions);
 	ignore = _ignore;
 	GenerateMatchings();
-
-	delete comp;
+	if (matchingScore.size() > 0) {
+		bestScore = matchingScore[0];
+		bestMatching = bestMatchings[0];
+	}
 }
 
 void GraphMatcher::GenerateMatchings() {
@@ -104,13 +116,13 @@ void GraphMatcher::FinishMatching(vector<int>& proposedMatching) {
 	}
 	//and restore used
 	used = tempUsed;*/
-	float error = ValueMatching(proposedMatching);
-	if (bestMatchings.size() < solutions || error < matchingScore.back()) {
-		//bestScore = error;
-		//bestMatching = finalMatching;
-		InsertOrdered(error, proposedMatching);
-		if (bestMatchings.size() > solutions) {
-			bestMatchings.resize(solutions);
+	float error = 0;
+	if (evaluator->EvaluateMatching(A, B, proposedMatching, error)) {
+		if (bestMatchings.size() < solutions || error < matchingScore.back()) {
+			InsertOrdered(error, proposedMatching);
+			if (bestMatchings.size() > solutions) {
+				bestMatchings.resize(solutions);
+			}
 		}
 	}
 }
@@ -147,8 +159,8 @@ int GraphMatcher::MatchLeaf(int a, int b, vector<int>& matching) {
 	return -1;
 }
 
-float GraphMatcher::ValueMatching(vector<int>& matching) {
-	float error = 0;
+bool GraphMatcher::ValueMatching(vector<int>& matching, float& error) {
+	error = 0;
 
 	for (int i = 0; i < A->nodes.size(); i++) {
 		SkeletonGraphNode* node = A->nodes[i];
@@ -159,29 +171,24 @@ float GraphMatcher::ValueMatching(vector<int>& matching) {
 			}
 		} else {
 			//error are only the missing ones
-			//find matches
-			vector<int> matched;
+			//check if neighbors are neighbors in matching and add error
 			for (int j = 0; j < node->neighborhood.size(); j++) {
-				matched.push_back(node->neighborhood[j]->id);
-			}
-			//check if matches are neighbors and add error
-			for (int j = 0; j < matched.size(); j++) {
-				if (matching[matched[j]] == -1) {
-					//penalize for missing neighbor
-					error += 10;
+				int id = node->neighborhood[j]->id;
+				if (matching[id] == -1) {
+					//penalize for missing neighbor if needed (missing node is penalized anyway)
 				} else {
 					GraphEdge edge;
-					if (B->AreNeighbors(matching[node->id], matching[matched[j]], edge)) {
+					if (B->AreNeighbors(matching[node->id], matching[id], edge)) {
 						error += abs(edge.nodes - node->edges[j].nodes);
-					} else {//penalize for wrong topology
-						error += 100;
+					} else {//wrong topology == invalid matching
+						return false;
 					}
 				}
 			}
 		}
 	}
 
-	return error;
+	return true;
 }
 
 bool In(int num, vector<int> array) {

@@ -95,7 +95,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	B.CreateGraphFromSkeleton(sklB, numB);
 
 	GraphMatcher gm;
-	gm.MatchGraphs(&A, &B, &GraphNodeMatch(), 4);
+	gm.MatchGraphs(&A, &B);
 
 	return 0;
 }
