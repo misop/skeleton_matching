@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "SkeletonMatchNode.h"
 #include "GraphMatcher.h"
 
 using namespace std;
@@ -30,18 +31,18 @@ SkeletonNode* LoadSkeletonFromFile(string fileName) {
 	return node;
 }
 
-SkeletonNode* CreateSkeletonA() {
-	SkeletonNode* root = new SkeletonNode(0, 0, 0);
-	SkeletonNode* node1 = new SkeletonNode(-100, -5, 0);
-	SkeletonNode* node2 = new SkeletonNode(-130, 30, 0);
-	SkeletonNode* node3 = new SkeletonNode(-130, -30, 0);
-	SkeletonNode* node4 = new SkeletonNode(100, -5, 0);
-	SkeletonNode* node5 = new SkeletonNode(130, 30, 0);
-	SkeletonNode* node6 = new SkeletonNode(130, -30, 0);
-	SkeletonNode* node7 = new SkeletonNode(0, 100, 0);
+SkeletonMatchNode* CreateSkeletonA() {
+	SkeletonMatchNode* root = new SkeletonMatchNode(0, 0, 0);
+	SkeletonMatchNode* node1 = new SkeletonMatchNode(-100, -5, 0);
+	SkeletonMatchNode* node2 = new SkeletonMatchNode(-130, 30, 0);
+	SkeletonMatchNode* node3 = new SkeletonMatchNode(-130, -30, 0);
+	SkeletonMatchNode* node4 = new SkeletonMatchNode(100, -5, 0);
+	SkeletonMatchNode* node5 = new SkeletonMatchNode(130, 30, 0);
+	SkeletonMatchNode* node6 = new SkeletonMatchNode(130, -30, 0);
+	SkeletonMatchNode* node7 = new SkeletonMatchNode(0, 100, 0);
 
 	root->AddChild(node1);
-	root->AddChild(node4);
+	//root->AddChild(node4);
 	root->AddChild(node7);
 
 	node1->AddChild(node2);
@@ -50,18 +51,19 @@ SkeletonNode* CreateSkeletonA() {
 	node4->AddChild(node5);
 	node4->AddChild(node6);
 
+	FixParents(root);
 	return root;
 }
 
-SkeletonNode* CreateSkeletonB() {
-	SkeletonNode* root = new SkeletonNode(0, 0, 0);
-	SkeletonNode* node1 = new SkeletonNode(-50, -5, 0);
-	SkeletonNode* node2 = new SkeletonNode(-130, 30, 0);
-	SkeletonNode* node3 = new SkeletonNode(-130, -30, 0);
-	SkeletonNode* node4 = new SkeletonNode(50, -5, 0);
-	SkeletonNode* node5 = new SkeletonNode(130, 30, 0);
-	SkeletonNode* node6 = new SkeletonNode(130, -30, 0);
-	SkeletonNode* node7 = new SkeletonNode(0, 100, 0);
+SkeletonMatchNode* CreateSkeletonB() {
+	SkeletonMatchNode* root = new SkeletonMatchNode(0, 0, 0);
+	SkeletonMatchNode* node1 = new SkeletonMatchNode(-50, -5, 0);
+	SkeletonMatchNode* node2 = new SkeletonMatchNode(-130, 30, 0);
+	SkeletonMatchNode* node3 = new SkeletonMatchNode(-130, -30, 0);
+	SkeletonMatchNode* node4 = new SkeletonMatchNode(50, -5, 0);
+	SkeletonMatchNode* node5 = new SkeletonMatchNode(130, 30, 0);
+	SkeletonMatchNode* node6 = new SkeletonMatchNode(130, -30, 0);
+	SkeletonMatchNode* node7 = new SkeletonMatchNode(0, 100, 0);
 
 	root->AddChild(node1);
 	root->AddChild(node4);
@@ -73,15 +75,19 @@ SkeletonNode* CreateSkeletonB() {
 	node4->AddChild(node5);
 	node4->AddChild(node6);
 
+	FixParents(root);
 	return root;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	//SkeletonNode* sklA = LoadSkeletonFromFile("skeletons/A.skl");
-	//SkeletonNode* sklB = LoadSkeletonFromFile("skeletons/B.skl");
-	SkeletonNode* sklA = CreateSkeletonA();
-	SkeletonNode* sklB = CreateSkeletonB();
+	//SkeletonMatchNode* sklA = new SkeletonMatchNode(LoadSkeletonFromFile("skeletons/A.skl"));
+	//SkeletonMatchNode* sklB = new SkeletonMatchNode(LoadSkeletonFromFile("skeletons/B.skl"));
+	SkeletonMatchNode* sklA = CreateSkeletonA();
+	SkeletonMatchNode* sklB = CreateSkeletonB();
+
+	sklA = PrepareForTriming(sklA);
+	sklB = PrepareForTriming(sklB);
 
 	sklA->Trim();
 	sklB->Trim();

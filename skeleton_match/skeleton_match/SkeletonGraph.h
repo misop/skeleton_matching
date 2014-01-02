@@ -1,6 +1,6 @@
 #pragma once
 #include "SkeletonGraphNode.h"
-#include "SkeletonNode.h"
+#include "SkeletonMatchNode.h"
 
 class SkeletonGraph
 {
@@ -11,7 +11,7 @@ public:
 	SkeletonGraph(void);
 	~SkeletonGraph(void);
 
-	void CreateGraphFromSkeleton(SkeletonNode* root, int numOfNodes);
+	void CreateGraphFromSkeleton(SkeletonMatchNode* root, int numOfNodes);
 	void CollectBranchNodes();
 	
 	void AddNode(SkeletonGraphNode* node);

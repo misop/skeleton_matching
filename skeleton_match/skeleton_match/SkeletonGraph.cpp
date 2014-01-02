@@ -13,7 +13,7 @@ SkeletonGraph::~SkeletonGraph(void)
 }
 
 //number of nodes as would return vector.size()
-void SkeletonGraph::CreateGraphFromSkeleton(SkeletonNode* root, int numOfNodes) {
+void SkeletonGraph::CreateGraphFromSkeleton(SkeletonMatchNode* root, int numOfNodes) {
 	FreeNodes();
 	nodes.reserve(numOfNodes);
 	for (int i = 0; i < numOfNodes; i++) {
@@ -21,11 +21,11 @@ void SkeletonGraph::CreateGraphFromSkeleton(SkeletonNode* root, int numOfNodes) 
 		nodes.push_back(node);
 	}
 
-	deque<SkeletonNode*> queue;
+	deque<SkeletonMatchNode*> queue;
 	queue.push_back(root);
 
 	while (!queue.empty()) {
-		SkeletonNode* sklNode = queue.front();
+		SkeletonMatchNode* sklNode = queue.front();
 		queue.pop_front();
 		//edges are not oriented and parent would handle parent edge so we add only child edges
 		for (int i = 0; i < sklNode->nodes.size(); i++) {

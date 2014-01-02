@@ -21,31 +21,34 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\skeleton_match\GraphEdge.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\skeleton_match\GraphMatcher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\skeleton_match\GraphMatchingEvaluator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\skeleton_match\GraphNodeMatch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\skeleton_match\m_math.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\skeleton_match\SkeletonGraph.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\skeleton_match\SkeletonGraphNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\skeleton_match\SkeletonNode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\skeleton_match\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphEdge.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphMatcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphMatchingEvaluator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphNodeMatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="m_math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonGraph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonGraphNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonMatchNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkeletonNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,25 +59,25 @@
     <ClCompile Include="skeleton_match_VS10.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\skeleton_match\GraphMatcher.cpp">
+    <ClCompile Include="GraphMatcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\skeleton_match\GraphMatchingEvaluator.cpp">
+    <ClCompile Include="GraphMatchingEvaluator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\skeleton_match\GraphNodeMatch.cpp">
+    <ClCompile Include="GraphNodeMatch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\skeleton_match\m_math.cpp">
+    <ClCompile Include="m_math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\skeleton_match\SkeletonGraph.cpp">
+    <ClCompile Include="SkeletonGraph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\skeleton_match\SkeletonGraphNode.cpp">
+    <ClCompile Include="SkeletonGraphNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\skeleton_match\SkeletonNode.cpp">
+    <ClCompile Include="SkeletonMatchNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

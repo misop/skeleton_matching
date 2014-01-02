@@ -23,25 +23,26 @@ GraphMatcher::~GraphMatcher(void)
 	}
 }
 
-void GraphMatcher::MatchGraphs(SkeletonGraph* match, SkeletonGraph* to, int _solutions, int _ignore) {
-	A = match;
-	B = to;
-	GraphNodeMatch* comp = new GraphNodeMatch();
-	solutions = max(1, _solutions);
-	ignore = _ignore;
-	GenerateMatchings();
-	if (matchingScore.size() > 0) {
-		bestScore = matchingScore[0];
-		bestMatching = bestMatchings[0];
+void GraphMatcher::MatchGraphs(SkeletonGraph* match, SkeletonGraph* to, float _threshold) {
+	if (match->nodes.size() <= to->nodes.size()) {
+		A = match;
+		B = to;
+	} else {
+		A = to;
+		B = match;
 	}
+	threshold = _threshold;
+	ignore = 0;
+	GenerateMatchings();
+	solutions = matchingScore.size();
 }
 
 void GraphMatcher::GenerateMatchings() {
 	vector<int> matching;
 	matching.reserve(A->nodes.size());
 	used.clear();
-	bestMatching.clear();
-	bestScore = 0;
+	matchingScore.clear();
+	bestMatchings.clear();
 	Backtrack(0, matching);
 }
 
@@ -56,9 +57,9 @@ void GraphMatcher::Backtrack(int num, vector<int>& matching) {
 				used.push_back(i);
 				if (i == -1) ignore--;
 				Backtrack(num + 1, matching);
+				if (i == -1) ignore++;
 				used.pop_back();
 				matching.pop_back();
-				if (i == -1) ignore++;
 			}
 		}
 	}
@@ -116,13 +117,19 @@ void GraphMatcher::FinishMatching(vector<int>& proposedMatching) {
 	}
 	//and restore used
 	used = tempUsed;*/
-	float error = 0;
+	/*float error = 0;
 	if (evaluator->EvaluateMatching(A, B, proposedMatching, error)) {
 		if (bestMatchings.size() < solutions || error < matchingScore.back()) {
 			InsertOrdered(error, proposedMatching);
 			if (bestMatchings.size() > solutions) {
 				bestMatchings.resize(solutions);
 			}
+		}
+	}*/
+	float error = 0;
+	if (evaluator->EvaluateMatching(A, B, proposedMatching, error)) {
+		if (bestMatchings.size() == 0 || error < matchingScore[0] + threshold) {
+			InsertOrderedAndMoveThreshold(error, proposedMatching);
 		}
 	}
 }
@@ -131,6 +138,42 @@ void GraphMatcher::InsertOrdered(float num, vector<int>& matching) {
 	if (matchingScore.size() == 0 || num >= matchingScore.back()) {
 		matchingScore.push_back(num);
 		bestMatchings.push_back(matching);
+		return;
+	}
+	vector<vector<int> >::iterator it_2 = bestMatchings.begin();
+	for (vector<float>::iterator it = matchingScore.begin(); it != matchingScore.end(); it++) {
+		if ((*it) > num) {
+			matchingScore.insert(it, num);
+			bestMatchings.insert(it_2, matching);
+			break;
+		}
+
+		it_2++;
+	}
+}
+
+void GraphMatcher::InsertOrderedAndMoveThreshold(float num, vector<int>& matching) {
+	if (matchingScore.size() == 0 || num >= matchingScore.back()) {
+		matchingScore.push_back(num);
+		bestMatchings.push_back(matching);
+		return;
+	}
+	//new found is the best matching and sets a new threshold
+	if (matchingScore[0] > num) {
+		vector<float> tempScore;
+		vector<vector<int> > tempMatching;
+		tempScore.push_back(num);
+		tempMatching.push_back(matching);
+		for (int i = 0; i < matchingScore.size(); i++) {
+			if (matchingScore[i] < num + threshold) {
+				tempScore.push_back(matchingScore[i]);
+				tempMatching.push_back(bestMatchings[i]);
+			} else {
+				break;
+			}
+		}
+		matchingScore = tempScore;
+		bestMatchings = tempMatching;
 		return;
 	}
 	vector<vector<int> >::iterator it_2 = bestMatchings.begin();
