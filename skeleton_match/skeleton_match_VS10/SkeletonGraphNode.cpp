@@ -2,11 +2,11 @@
 #include "SkeletonGraphNode.h"
 
 
-SkeletonGraphNode::SkeletonGraphNode(void)
+SkeletonGraphNode::SkeletonGraphNode(void) : id(0), point(CVector3())
 {
 }
 
-SkeletonGraphNode::SkeletonGraphNode(int idx) : id(idx)
+SkeletonGraphNode::SkeletonGraphNode(int idx) : id(idx), point(CVector3())
 {
 }
 

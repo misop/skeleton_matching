@@ -1,6 +1,7 @@
 #include "stdafx.h"
+#include <algorithm>
 #include "GraphMatcher.h"
-
+#include "ValueMatchingStruct.h"
 
 GraphMatcher::GraphMatcher(void)
 {
@@ -232,6 +233,38 @@ bool GraphMatcher::ValueMatching(vector<int>& matching, float& error) {
 	}
 
 	return true;
+}
+
+void GraphMatcher::SortFoundMatchings() {
+	vector<ValueMatchingStruct> toSort;
+	for (int i = 0; i < matchingScore.size(); i++) {
+		float value = EvaluateForSorting(bestMatchings[i]);
+		toSort.push_back(ValueMatchingStruct(value, bestMatchings[i]));
+	}
+
+	sort(toSort.begin(), toSort.end());
+
+	matchingScore.clear();
+	bestMatchings.clear();
+	for (int i = 0; i < toSort.size(); i++) {
+		matchingScore.push_back(toSort[i].value);
+		bestMatchings.push_back(toSort[i].matching);
+	}
+}
+
+float GraphMatcher::EvaluateForSorting(vector<int>& matching) {
+	float dist = 0;
+
+	for (int i = 0; i < A->nodes.size(); i++) {
+		//this is leaf so we check distance
+		if (A->nodes[i]->neighborhood.size() == 1) {
+			if (matching[i] != -1) {
+				dist += Length(A->nodes[i]->point - B->nodes[matching[i]]->point);
+			}
+		}
+	}
+
+	return dist;
 }
 
 bool In(int num, vector<int> array) {

@@ -8,6 +8,7 @@ using namespace std;
 class SkeletonGraphNode {
 public:
 	int id;
+	CVector3 point;
 	vector<SkeletonGraphNode*> neighborhood;
 	vector<GraphEdge> edges;
 public:

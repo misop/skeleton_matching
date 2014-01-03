@@ -24,14 +24,17 @@ void SkeletonGraph::CreateGraphFromSkeleton(SkeletonMatchNode* root, int numOfNo
 	deque<SkeletonMatchNode*> queue;
 	queue.push_back(root);
 
+	int id = 0;
 	while (!queue.empty()) {
 		SkeletonMatchNode* sklNode = queue.front();
 		queue.pop_front();
+		nodes[id]->point = sklNode->point;
 		//edges are not oriented and parent would handle parent edge so we add only child edges
 		for (int i = 0; i < sklNode->nodes.size(); i++) {
 			CreateEdge(sklNode->id, sklNode->nodes[i]->id, GraphEdge(sklNode->betweenNodes[i], sklNode->dists[i]));
 			queue.push_back(sklNode->nodes[i]);
 		}
+		id++;
 	}
 	CollectBranchNodes();
 }

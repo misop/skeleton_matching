@@ -33,6 +33,8 @@ public:
 	bool ValueMatching(vector<int>& matching, float& error);
 	void InsertOrdered(float num, vector<int>& matching);
 	void InsertOrderedAndMoveThreshold(float num, vector<int>& matching);
+	void SortFoundMatchings();
+	float EvaluateForSorting(vector<int>& matching);
 };
 
 bool In(int num, vector<int> array);

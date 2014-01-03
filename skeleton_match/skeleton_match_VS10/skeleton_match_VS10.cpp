@@ -25,6 +25,7 @@ SkeletonNode* LoadSkeletonFromFile(string fileName) {
 	try {
 		inputArchive >> BOOST_SERIALIZATION_NVP(node);	
 	} catch (boost::archive::archive_exception e) {
+		errorLog << fileName << endl;
 		errorLog << "Exception: " << e.what() << endl;
 		throw e;
 	}
@@ -81,10 +82,13 @@ SkeletonMatchNode* CreateSkeletonB() {
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	//SkeletonMatchNode* sklA = new SkeletonMatchNode(LoadSkeletonFromFile("skeletons/A.skl"));
-	//SkeletonMatchNode* sklB = new SkeletonMatchNode(LoadSkeletonFromFile("skeletons/B.skl"));
-	SkeletonMatchNode* sklA = CreateSkeletonA();
-	SkeletonMatchNode* sklB = CreateSkeletonB();
+	SkeletonMatchNode* sklA = new SkeletonMatchNode(LoadSkeletonFromFile("skeletons/jointy_panacik1.skl"));
+	SkeletonMatchNode* sklB = new SkeletonMatchNode(LoadSkeletonFromFile("skeletons/jointy_panacik2.skl"));
+	//SkeletonMatchNode* sklA = CreateSkeletonA();
+	//SkeletonMatchNode* sklB = CreateSkeletonB();
+
+	FixParents(sklA);
+	FixParents(sklB);
 
 	sklA = PrepareForTriming(sklA);
 	sklB = PrepareForTriming(sklB);
@@ -102,6 +106,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	GraphMatcher gm;
 	gm.MatchGraphs(&A, &B);
+	gm.SortFoundMatchings();
 
 	return 0;
 }
