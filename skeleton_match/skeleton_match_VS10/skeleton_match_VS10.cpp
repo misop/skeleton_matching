@@ -82,8 +82,11 @@ SkeletonMatchNode* CreateSkeletonB() {
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	SkeletonMatchNode* sklA = new SkeletonMatchNode(LoadSkeletonFromFile("skeletons/jointy_panacik1.skl"));
-	SkeletonMatchNode* sklB = new SkeletonMatchNode(LoadSkeletonFromFile("skeletons/jointy_panacik2.skl"));
+	SkeletonNode* sknA = LoadSkeletonFromFile("skeletons/barbie4_24seg_2ite.skl");
+	//SkeletonNode* sknB = LoadSkeletonFromFile("skeletons/barbie4_24seg_2ite.skl");
+	SkeletonNode* sknB = LoadSkeletonFromFile("skeletons/barbie4_24seg_2ite_inaTopo.skl");
+	SkeletonMatchNode* sklA = new SkeletonMatchNode(sknA);
+	SkeletonMatchNode* sklB = new SkeletonMatchNode(sknB);
 	//SkeletonMatchNode* sklA = CreateSkeletonA();
 	//SkeletonMatchNode* sklB = CreateSkeletonB();
 
