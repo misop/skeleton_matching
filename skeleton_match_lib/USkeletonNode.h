@@ -1,8 +1,8 @@
 #pragma once
-#include "m_math.h"
+#include <m_math.h>
 #include "SkeletonGraph.h"
 #include <vector>
-#include "SkeletonNode.h"
+#include <SkeletonNode.h>
 
 using namespace std;
 

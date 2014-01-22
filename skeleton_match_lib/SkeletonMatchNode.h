@@ -1,8 +1,8 @@
 #pragma once
-#include "m_math.h"
+#include <m_math.h>
 #include <vector>
 #include <boost/serialization/version.hpp>
-#include "SkeletonNode.h"
+#include <SkeletonNode.h>
 
 using namespace std;
 
