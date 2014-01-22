@@ -79,20 +79,6 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\skeleton_match\stdafx.h" />
-    <ClInclude Include="GraphEdge.h" />
-    <ClInclude Include="GraphMatcher.h" />
-    <ClInclude Include="GraphMatchingEvaluator.h" />
-    <ClInclude Include="GraphNodeMatch.h" />
-    <ClInclude Include="m_math.h" />
-    <ClInclude Include="SkeletonGraph.h" />
-    <ClInclude Include="SkeletonGraphNode.h" />
-    <ClInclude Include="SkeletonMatchNode.h" />
-    <ClInclude Include="SkeletonNode.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="ValueMatchingStruct.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="GraphMatcher.cpp" />
     <ClCompile Include="GraphMatchingEvaluator.cpp" />
     <ClCompile Include="GraphNodeMatch.cpp" />
@@ -105,6 +91,23 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="USkeletonNode.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\skeleton_match\stdafx.h" />
+    <ClInclude Include="GraphEdge.h" />
+    <ClInclude Include="GraphMatcher.h" />
+    <ClInclude Include="GraphMatchingEvaluator.h" />
+    <ClInclude Include="GraphNodeMatch.h" />
+    <ClInclude Include="m_math.h" />
+    <ClInclude Include="SkeletonGraph.h" />
+    <ClInclude Include="SkeletonGraphNode.h" />
+    <ClInclude Include="SkeletonMatchNode.h" />
+    <ClInclude Include="SkeletonNode.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="USkeletonNode.h" />
+    <ClInclude Include="Utility.h" />
+    <ClInclude Include="ValueMatchingStruct.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

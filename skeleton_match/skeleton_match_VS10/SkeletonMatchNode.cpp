@@ -42,14 +42,17 @@ void SkeletonMatchNode::RemoveChild(SkeletonMatchNode *node) {
 void SkeletonMatchNode::Trim() {
 	dists.clear();
 	betweenNodes.clear();
+	positions.clear();
 
 	for (int i = 0; i < nodes.size(); i++) {
 		int between = 0;
 		float dist = 0;
-		SkeletonMatchNode* node = GetEnd(nodes[i], between, dist);
+		vector<CVector3> pos;
+		SkeletonMatchNode* node = GetEnd(nodes[i], between, dist, pos);
 		nodes[i] = node;
 		betweenNodes.push_back(between);
 		dists.push_back(dist);
+		positions.push_back(pos);
 	}
 
 	for (int i = 0; i < nodes.size(); i++) {
@@ -59,13 +62,20 @@ void SkeletonMatchNode::Trim() {
 
 //finds the last link
 SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist) {
+	vector<CVector3> temp;
+	return GetEnd(node, between, dist, temp);
+}
+
+SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist, vector<CVector3> &pos) {
 	SkeletonMatchNode* search = node;
 	between = 0;
 	dist = 0;
+	pos.clear();
 
 	while (search->nodes.size() == 1) {
 		between++;
 		dist += Length(search->point - search->nodes[0]->point);
+		pos.push_back(search->point);
 		search = search->nodes[0];
 	}
 

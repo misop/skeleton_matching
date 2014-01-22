@@ -14,6 +14,7 @@ public:
 	int id;
 	vector<float> dists;
 	vector<int> betweenNodes;
+	vector<vector<CVector3> > positions;
 	vector<SkeletonMatchNode*> nodes;
 	SkeletonMatchNode* parent;
 public:
@@ -40,8 +41,9 @@ protected:
 
 BOOST_CLASS_VERSION(SkeletonMatchNode, 0)
 
-	
+
 SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist);
+SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist, vector<CVector3> &pos);
 int RecalculateIDs(SkeletonMatchNode* node);
 void SwapRoot(SkeletonMatchNode* root, SkeletonMatchNode* node);
 SkeletonMatchNode* PrepareForTriming(SkeletonMatchNode* node);

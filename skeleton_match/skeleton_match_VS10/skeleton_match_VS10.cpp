@@ -13,6 +13,7 @@
 #include <string>
 #include "SkeletonMatchNode.h"
 #include "GraphMatcher.h"
+#include "USkeletonNode.h"
 
 using namespace std;
 
@@ -110,6 +111,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	GraphMatcher gm;
 	gm.MatchGraphs(&A, &B);
 	gm.SortFoundMatchings();
+
+	vector<int> matching = gm.bestMatchings[0];
+	USkeletonNode* uroot = new USkeletonNode(&A);
+	USkeletonNode* toAdd = new USkeletonNode(&B, uroot, matching);
+
+	AddSkeleton(uroot, toAdd, uroot, matching);
 
 	return 0;
 }
