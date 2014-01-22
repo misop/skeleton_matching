@@ -74,7 +74,7 @@ SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist, ve
 
 	while (search->nodes.size() == 1) {
 		between++;
-		dist += Length(search->point - search->nodes[0]->point);
+		dist += Magnitude(search->point - search->nodes[0]->point);
 		pos.push_back(search->point);
 		search = search->nodes[0];
 	}

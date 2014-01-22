@@ -1,5 +1,5 @@
 #pragma once
 #include <vector>
-#include <SkeletonNode.h>
+#include <s_skeletonNode.h>
 
 std::vector<SkeletonNode* > MatchSkeletons(std::vector<SkeletonNode *> skeletons);

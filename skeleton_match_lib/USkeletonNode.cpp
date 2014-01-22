@@ -11,7 +11,7 @@ USkeletonNode::USkeletonNode(int _id, CVector3 _point, USkeletonNode* _parent) {
 	id = _id;
 	point = _point;
 	parent = _parent;
-	parentDist = Length(point - parent->point);
+	parentDist = Magnitude(point - parent->point);
 	parent->nodes.push_back(this);
 }
 
@@ -19,7 +19,7 @@ USkeletonNode::USkeletonNode(USkeletonNode* root, USkeletonNode* addRoot) {
 	id = root->id;
 	point = addRoot->point;
 	parent = root;
-	parentDist = Length(point - parent->point);
+	parentDist = Magnitude(point - parent->point);
 	parent->nodes.push_back(this);
 
 	for (int i = 0; i < addRoot->nodes.size(); i++) {
@@ -45,7 +45,7 @@ USkeletonNode::USkeletonNode(SkeletonGraph* G, USkeletonNode* root, int gid, int
 	root->nodes.push_back(this);
 	id = gid;
 	point = G->nodes[gid]->point;
-	parentDist = Length(point - parent->point);
+	parentDist = Magnitude(point - parent->point);
 
 	for (int i = 0; i < G->nodes[gid]->edges.size(); i++) {
 		if (G->nodes[gid]->neighborhood[i]->id == skipId) continue;
@@ -65,7 +65,7 @@ USkeletonNode* USkeletonNode::SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode*
 		node->id = toId;
 		node->point = ge.positions[idx];
 		node->parent = croot;
-		node->parentDist = Length(node->point - croot->point);
+		node->parentDist = Magnitude(node->point - croot->point);
 
 		croot->nodes.push_back(node);
 
@@ -105,7 +105,7 @@ USkeletonNode::USkeletonNode(SkeletonGraph* G, USkeletonNode* root, USkeletonNod
 	parent = root;
 	root->nodes.push_back(this);
 	point = G->nodes[id]->point;
-	parentDist = Length(root->point - point);
+	parentDist = Magnitude(root->point - point);
 
 	vector<int> used;
 	for (int i = 0; i < other->nodes.size(); i++) {
@@ -137,7 +137,7 @@ void USkeletonNode::SetParent(USkeletonNode* node) {
 	parent->RemoveChild(this);
 	parent = node;
 	parent->nodes.push_back(this);
-	parentDist = Length(point - parent->point);
+	parentDist = Magnitude(point - parent->point);
 }
 
 void USkeletonNode::RemoveChild(USkeletonNode* node) {
@@ -192,7 +192,7 @@ void AddSkeleton(USkeletonNode* oNode, USkeletonNode* aNode, USkeletonNode* root
 		return;
 	}
 	//add closer node
-	float len = Length(aNode->point - root->point);
+	float len = Magnitude(aNode->point - root->point);
 	//if within threshold don't add and skip
 	if (fabs(oNode->parentDist - len) < lthreshold) {
 		//move both

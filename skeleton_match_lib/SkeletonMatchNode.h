@@ -2,7 +2,7 @@
 #include <m_math.h>
 #include <vector>
 #include <boost/serialization/version.hpp>
-#include <SkeletonNode.h>
+#include <s_skeletonNode.h>
 
 using namespace std;
 

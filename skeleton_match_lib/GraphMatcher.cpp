@@ -259,7 +259,7 @@ float GraphMatcher::EvaluateForSorting(vector<int>& matching) {
 		//this is leaf so we check distance
 		if (A->nodes[i]->neighborhood.size() == 1) {
 			if (matching[i] != -1) {
-				dist += Length(A->nodes[i]->point - B->nodes[matching[i]]->point);
+				dist += Magnitude(A->nodes[i]->point - B->nodes[matching[i]]->point);
 			}
 		}
 	}

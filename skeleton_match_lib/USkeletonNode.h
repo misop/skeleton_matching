@@ -2,7 +2,7 @@
 #include <m_math.h>
 #include "SkeletonGraph.h"
 #include <vector>
-#include <SkeletonNode.h>
+#include <s_skeletonNode.h>
 
 using namespace std;
 
