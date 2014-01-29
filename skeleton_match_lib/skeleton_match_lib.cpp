@@ -74,6 +74,8 @@ vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, float th
 	vector<SkeletonNode* > result;
 	result.push_back(uroot->ToSkeletonNode());
 	for (int i = 0; i < skelets.size(); i++) {
+		//result.push_back(skelets[i]->ToSkeletonNode());
+		AddSkeleton(skelets[i], uroot, mappings[i], threshold);
 		result.push_back(skelets[i]->ToSkeletonNode());
 	}
 

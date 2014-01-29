@@ -204,6 +204,24 @@ SkeletonNode* USkeletonNode::ToSkeletonNode() {
 	return skl;
 }
 
+void USkeletonNode::CalculateCorrespondingDoF(USkeletonNode *bind) {
+	//have to be the same skeleton just posed differently
+	//this is in bind position
+	axisAngle = CVector4(0, 0, 0, 1);
+
+	if (parent != NULL) {
+		CVector3 u = CVector3(1, 0, 0);
+		CVector3 v = CVector3(1, 0, 0);
+		//calculate DoF somehow
+	}
+
+	for (int i = 0; i < nodes.size(); i++) {
+		if (i < bind->nodes.size()) {
+			nodes[i]->CalculateCorrespondingDoF(bind->nodes[i]);
+		}
+	}
+}
+
 USkeletonNode* SkipSameIds(USkeletonNode* node) {
 	int id = node->id;
 	while (node->nodes.size() == 1 && node->nodes[0]->id == id) {
@@ -299,10 +317,13 @@ void AddSkeleton(USkeletonNode* oNode, float oDist, USkeletonNode* aNode, float 
 		}
 	} else {//if aNode is closer add new node
 		int idx = oNode->id;
-		USkeletonNode* node = new USkeletonNode(idx, aNode->point, aDist, root);
+		CVector3 dir = Normalize(oNode->point - root->point);
+		//USkeletonNode* node = new USkeletonNode(idx, aNode->point, aDist, root);
+		USkeletonNode* node = new USkeletonNode(idx, root->point + dir*aDist, aDist, root);
 		root->ReplaceChild(oNode, node);
 		node->nodes.push_back(oNode);
 		oNode->parent = node;
+		oNode->parentDist -= aDist;
 		//move aNode
 		if (aNode->nodes.size() == 0) {
 			AddSkeleton(oNode, oDist - aDist, NULL, 0, node, mapping, lthreshold);

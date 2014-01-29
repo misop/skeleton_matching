@@ -12,6 +12,7 @@ public:
 	int id;
 	int count;
 	CVector3 point;
+	CVector4 axisAngle;
 	float parentDist;
 	USkeletonNode* parent;
 	vector<USkeletonNode*> nodes;
@@ -31,6 +32,7 @@ public:
 	void RemoveChild(USkeletonNode* node);
 	bool ReplaceChild(USkeletonNode* child, USkeletonNode* node);
 	SkeletonNode* ToSkeletonNode();
+	void CalculateCorrespondingDoF(USkeletonNode* bind);
 };
 
 USkeletonNode* SkipSameIds(USkeletonNode* node);
