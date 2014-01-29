@@ -8,6 +8,7 @@ using namespace std;
 
 float AvarageLength(USkeletonNode* root) {
 	float length = 0;
+	float nodes = 0;
 	vector<USkeletonNode* > stack;
 	stack.push_back(root);
 
@@ -16,16 +17,17 @@ float AvarageLength(USkeletonNode* root) {
 		stack.pop_back();
 
 		length += node->parentDist;
+		nodes += 1;
 
 		for (int i = 0; i < node->nodes.size(); i++) {
 			stack.push_back(node->nodes[i]);
 		}
 	}
 
-	return length;
+	return length/nodes;
 }
 
-vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons) {
+vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, float thresholdPercent) {
 	vector<SkeletonMatchNode *> skls;
 	for (int i = 0; i < skeletons.size(); i++) {
 		SkeletonMatchNode* skl = new SkeletonMatchNode(skeletons[i]);
@@ -61,7 +63,7 @@ vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons) {
 
 	USkeletonNode* uroot = new USkeletonNode(G[smalestID]);
 	vector<USkeletonNode* > skelets;
-	float threshold = AvarageLength(uroot) / 10.0;
+	float threshold = AvarageLength(uroot) * thresholdPercent;
 	for (int i = 0; i < G.size(); i++) {
 		USkeletonNode* toAdd = new USkeletonNode(G[i], uroot, mappings[i]);
 		//AddSkeleton(uroot, toAdd, uroot, mappings[i]);

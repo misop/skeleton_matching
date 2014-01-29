@@ -83,6 +83,7 @@ SkeletonMatchNode* CreateSkeletonB() {
 
 float AvarageLength(USkeletonNode* root) {
 	float length = 0;
+	float nodes = 0;
 	vector<USkeletonNode* > stack;
 	stack.push_back(root);
 
@@ -91,13 +92,14 @@ float AvarageLength(USkeletonNode* root) {
 		stack.pop_back();
 
 		length += node->parentDist;
+		nodes += 1;
 
 		for (int i = 0; i < node->nodes.size(); i++) {
 			stack.push_back(node->nodes[i]);
 		}
 	}
 
-	return length;
+	return length/nodes;
 }
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -135,7 +137,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	USkeletonNode* uroot = new USkeletonNode(&A);
 	USkeletonNode* toAdd = new USkeletonNode(&B, uroot, matching);
 
-	float threshold = AvarageLength(uroot) / 10.0;
+	float threshold = AvarageLength(uroot) / 3.0;
 	AddSkeleton(uroot, toAdd, matching, threshold);
 
 	return 0;

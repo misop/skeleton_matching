@@ -193,6 +193,7 @@ SkeletonNode* USkeletonNode::ToSkeletonNode() {
 	SkeletonNode* skl = new SkeletonNode();
 	skl->id = id;
 	skl->point = point;
+	skl->cyclic = count;
 
 	for (int i = 0; i < nodes.size(); i++) {
 		SkeletonNode* nskl = nodes[i]->ToSkeletonNode();
