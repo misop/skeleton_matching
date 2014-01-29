@@ -5,17 +5,41 @@
 
 USkeletonNode::USkeletonNode(void)
 {
+	count = 1;
 }
 
 USkeletonNode::USkeletonNode(int _id, CVector3 _point, USkeletonNode* _parent) {
 	id = _id;
+	count = 1;
 	point = _point;
 	parent = _parent;
 	parentDist = Magnitude(point - parent->point);
 	parent->nodes.push_back(this);
 }
 
-USkeletonNode::USkeletonNode(USkeletonNode* root, USkeletonNode* addRoot) {
+USkeletonNode::USkeletonNode(int _id, CVector3 _point, float _parentDist, USkeletonNode* _parent) {
+	id = _id;
+	count = 1;
+	point = _point;
+	parent = _parent;
+	parentDist = _parentDist;
+	//parent->nodes.push_back(this);
+}
+
+USkeletonNode::USkeletonNode(USkeletonNode* root, USkeletonNode* addRoot, float _parentDist) {
+	id = root->id;
+	count = 1;
+	point = addRoot->point;
+	parent = root;
+	parentDist = _parentDist;
+	parent->nodes.push_back(this);
+
+	for (int i = 0; i < addRoot->nodes.size(); i++) {
+		USkeletonNode* node = new USkeletonNode(this, addRoot->nodes[i], addRoot->nodes[i]->parentDist);
+	}
+}
+
+/*USkeletonNode::USkeletonNode(USkeletonNode* root, USkeletonNode* addRoot) {
 	id = root->id;
 	point = addRoot->point;
 	parent = root;
@@ -25,7 +49,7 @@ USkeletonNode::USkeletonNode(USkeletonNode* root, USkeletonNode* addRoot) {
 	for (int i = 0; i < addRoot->nodes.size(); i++) {
 		USkeletonNode* node = new USkeletonNode(this, addRoot->nodes[i]);
 	}
-}
+}*/
 
 USkeletonNode::USkeletonNode(SkeletonGraph* G, int _id) {
 	if (_id == -1) _id = G->branchNodes[0]->id;
@@ -33,6 +57,7 @@ USkeletonNode::USkeletonNode(SkeletonGraph* G, int _id) {
 	id = _id;
 	point = G->nodes[_id]->point;
 	parentDist = 0;
+	count = 1;
 
 	for (int i = 0; i < G->nodes[_id]->edges.size(); i++) {
 		USkeletonNode* node = SkeletonNodesFromEdge(G->nodes[_id]->edges[i], this);
@@ -46,6 +71,7 @@ USkeletonNode::USkeletonNode(SkeletonGraph* G, USkeletonNode* root, int gid, int
 	id = gid;
 	point = G->nodes[gid]->point;
 	parentDist = Magnitude(point - parent->point);
+	count = 1;
 
 	for (int i = 0; i < G->nodes[gid]->edges.size(); i++) {
 		if (G->nodes[gid]->neighborhood[i]->id == skipId) continue;
@@ -58,6 +84,7 @@ USkeletonNode* USkeletonNode::SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode*
 	bool reverse = (ge.fromId != root->id);
 	int toId = reverse ? ge.fromId : ge.toId;
 	USkeletonNode* croot = root;
+	count = 1;
 
 	for (int i = 0; i < ge.positions.size(); i++) {
 		int idx = reverse ? (ge.positions.size() - i - 1) : i;
@@ -80,6 +107,7 @@ USkeletonNode::USkeletonNode(SkeletonGraph* G, USkeletonNode* other, vector<int>
 	parent = NULL;
 	parentDist = 0;
 	point = G->nodes[id]->point;
+	count = 1;
 
 	vector<int> used;
 	for (int i = 0; i < other->nodes.size(); i++) {
@@ -106,6 +134,7 @@ USkeletonNode::USkeletonNode(SkeletonGraph* G, USkeletonNode* root, USkeletonNod
 	root->nodes.push_back(this);
 	point = G->nodes[id]->point;
 	parentDist = Magnitude(root->point - point);
+	count = 1;
 
 	vector<int> used;
 	for (int i = 0; i < other->nodes.size(); i++) {
@@ -149,6 +178,17 @@ void USkeletonNode::RemoveChild(USkeletonNode* node) {
 	}
 }
 
+bool USkeletonNode::ReplaceChild(USkeletonNode* child, USkeletonNode* node) {
+	for (int i = 0; i < nodes.size(); i++) {
+		if (nodes[i] == child) {
+			nodes[i] = node;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 SkeletonNode* USkeletonNode::ToSkeletonNode() {
 	SkeletonNode* skl = new SkeletonNode();
 	skl->id = id;
@@ -176,55 +216,54 @@ void AddSkeleton(USkeletonNode* oNode, USkeletonNode* aNode, vector<int> mapping
 	//move both
 	for (int i = 0; i < aNode->nodes.size(); i++) {
 		if (i < oNode->nodes.size()) {
-			AddSkeleton(oNode->nodes[i], aNode->nodes[i], oNode, mapping, lthreshold);
+			AddSkeleton(oNode->nodes[i], oNode->nodes[i]->parentDist, aNode->nodes[i], aNode->nodes[i]->parentDist, oNode, mapping, lthreshold);
 		} else {
-			AddSkeleton(NULL, aNode->nodes[i], oNode, mapping, lthreshold);
+			AddSkeleton(NULL, 0, aNode->nodes[i], aNode->nodes[i]->parentDist, oNode, mapping, lthreshold);
 		}
 	}
 }
 
-void AddSkeleton(USkeletonNode* oNode, USkeletonNode* aNode, USkeletonNode* root, vector<int> mapping, float lthreshold) {
+void AddSkeleton(USkeletonNode* oNode, float oDist, USkeletonNode* aNode, float aDist, USkeletonNode* root, vector<int> mapping, float lthreshold) {
 	//no more to add
 	if (aNode == NULL) return;
 	//only nodes to add remain
 	if (oNode == NULL) {
-		USkeletonNode* node = new USkeletonNode(root, aNode);
+		USkeletonNode* node = new USkeletonNode(root, aNode, aDist);
 		return;
 	}
 	//add closer node
-	float len = Magnitude(aNode->point - root->point);
 	//if within threshold don't add and skip
-	if (fabs(oNode->parentDist - len) < lthreshold) {
+	if (fabs(oDist - aDist) < lthreshold) {
 		//move both
+		aNode->count++;
 		for (int i = 0; i < aNode->nodes.size(); i++) {
 			if (i < oNode->nodes.size()) {
-				AddSkeleton(oNode->nodes[i], aNode->nodes[i], oNode, mapping, lthreshold);
+				AddSkeleton(oNode->nodes[i], oNode->nodes[i]->parentDist, aNode->nodes[i], aNode->nodes[i]->parentDist, oNode, mapping, lthreshold);
 			} else {
-				AddSkeleton(NULL, aNode->nodes[i], oNode, mapping, lthreshold);
+				AddSkeleton(NULL, 0, aNode->nodes[i], aNode->nodes[i]->parentDist, oNode, mapping, lthreshold);
 			}
 		}
-	} else if (oNode->parentDist < len) {//if oNode is closer add just skip
+	} else if (oDist < aDist) {//if oNode is closer add just skip
 		//move oNode
 		if (oNode->nodes.size() > 0) {
-			AddSkeleton(oNode->nodes[0], aNode, oNode, mapping, lthreshold);
+			AddSkeleton(oNode->nodes[0], oNode->nodes[0]->parentDist, aNode, aDist - oDist, oNode, mapping, lthreshold);
 		} else {
-			AddSkeleton(NULL, aNode, oNode, mapping, lthreshold);
+			AddSkeleton(NULL, 0, aNode, aDist - oDist, oNode, mapping, lthreshold);
 		}
 	} else {//if aNode is closer add new node
-		vector<USkeletonNode *> nodes = root->nodes;
-		root->nodes.clear();
-		int idx = nodes.size() == 0 ? root->id : nodes[0]->id;
-		USkeletonNode* node = new USkeletonNode(idx, aNode->point, root);
-		node->nodes = nodes;
+		int idx = oNode->id;
+		USkeletonNode* node = new USkeletonNode(idx, aNode->point, aDist, root);
+		root->ReplaceChild(oNode, node);
+		node->nodes.push_back(oNode);
+		oNode->parent = node;
 		//move aNode
 		if (aNode->nodes.size() == 0) {
-			AddSkeleton(oNode, NULL, node, mapping, lthreshold);
+			AddSkeleton(oNode, oDist - aDist, NULL, 0, node, mapping, lthreshold);
 		} else {
-			AddSkeleton(oNode, aNode->nodes[0], node, mapping, lthreshold);
+			AddSkeleton(oNode, oDist - aDist, aNode->nodes[0], aNode->nodes[0]->parentDist, node, mapping, lthreshold);
 			for (int i = 1; i < aNode->nodes.size(); i++) {
-				AddSkeleton(NULL, aNode->nodes[i], node, mapping, lthreshold);
+				AddSkeleton(NULL, 0, aNode->nodes[i], aNode->nodes[i]->parentDist, node, mapping, lthreshold);
 			}
 		}
 	}
-
 }

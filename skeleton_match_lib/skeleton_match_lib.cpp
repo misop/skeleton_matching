@@ -6,6 +6,25 @@
 
 using namespace std;
 
+float AvarageLength(USkeletonNode* root) {
+	float length = 0;
+	vector<USkeletonNode* > stack;
+	stack.push_back(root);
+
+	while (!stack.empty()) {
+		USkeletonNode* node = stack.back();
+		stack.pop_back();
+
+		length += node->parentDist;
+
+		for (int i = 0; i < node->nodes.size(); i++) {
+			stack.push_back(node->nodes[i]);
+		}
+	}
+
+	return length;
+}
+
 vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons) {
 	vector<SkeletonMatchNode *> skls;
 	for (int i = 0; i < skeletons.size(); i++) {
@@ -42,10 +61,11 @@ vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons) {
 
 	USkeletonNode* uroot = new USkeletonNode(G[smalestID]);
 	vector<USkeletonNode* > skelets;
+	float threshold = AvarageLength(uroot) / 10.0;
 	for (int i = 0; i < G.size(); i++) {
 		USkeletonNode* toAdd = new USkeletonNode(G[i], uroot, mappings[i]);
 		//AddSkeleton(uroot, toAdd, uroot, mappings[i]);
-		AddSkeleton(uroot, toAdd, mappings[i]);
+		AddSkeleton(uroot, toAdd, mappings[i], threshold);
 		skelets.push_back(toAdd);
 	}
 

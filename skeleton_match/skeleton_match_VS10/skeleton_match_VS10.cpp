@@ -81,11 +81,30 @@ SkeletonMatchNode* CreateSkeletonB() {
 	return root;
 }
 
+float AvarageLength(USkeletonNode* root) {
+	float length = 0;
+	vector<USkeletonNode* > stack;
+	stack.push_back(root);
+
+	while (!stack.empty()) {
+		USkeletonNode* node = stack.back();
+		stack.pop_back();
+
+		length += node->parentDist;
+
+		for (int i = 0; i < node->nodes.size(); i++) {
+			stack.push_back(node->nodes[i]);
+		}
+	}
+
+	return length;
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
-	SkeletonNode* sknA = LoadSkeletonFromFile("skeletons/barbie4_24seg_2ite.skl");
+	SkeletonNode* sknA = LoadSkeletonFromFile("skeletons/barbie2_24seg_2ite.skl");
 	//SkeletonNode* sknB = LoadSkeletonFromFile("skeletons/barbie4_24seg_2ite.skl");
-	SkeletonNode* sknB = LoadSkeletonFromFile("skeletons/barbie4_24seg_2ite_inaTopo.skl");
+	SkeletonNode* sknB = LoadSkeletonFromFile("skeletons/barbie3_24seg_2ite.skl");
 	SkeletonMatchNode* sklA = new SkeletonMatchNode(sknA);
 	SkeletonMatchNode* sklB = new SkeletonMatchNode(sknB);
 	//SkeletonMatchNode* sklA = CreateSkeletonA();
@@ -116,7 +135,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	USkeletonNode* uroot = new USkeletonNode(&A);
 	USkeletonNode* toAdd = new USkeletonNode(&B, uroot, matching);
 
-	AddSkeleton(uroot, toAdd, uroot, matching);
+	float threshold = AvarageLength(uroot) / 10.0;
+	AddSkeleton(uroot, toAdd, matching, threshold);
 
 	return 0;
 }

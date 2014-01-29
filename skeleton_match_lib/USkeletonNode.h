@@ -10,6 +10,7 @@ class USkeletonNode
 {
 public:
 	int id;
+	int count;
 	CVector3 point;
 	float parentDist;
 	USkeletonNode* parent;
@@ -17,7 +18,8 @@ public:
 
 	USkeletonNode(void);
 	USkeletonNode(int _id, CVector3 _point, USkeletonNode* _parent);
-	USkeletonNode(USkeletonNode* root, USkeletonNode* addRoot);
+	USkeletonNode(int _id, CVector3 _point, float _parentDist, USkeletonNode* _parent);
+	USkeletonNode(USkeletonNode* root, USkeletonNode* addRoot, float _parentDist);
 	USkeletonNode(SkeletonGraph* G, int _id = -1);
 	USkeletonNode(SkeletonGraph* G, USkeletonNode* root, int gid, int skipId);
 	USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root);
@@ -27,13 +29,14 @@ public:
 
 	void SetParent(USkeletonNode* node);
 	void RemoveChild(USkeletonNode* node);
+	bool ReplaceChild(USkeletonNode* child, USkeletonNode* node);
 	SkeletonNode* ToSkeletonNode();
 };
 
 USkeletonNode* SkipSameIds(USkeletonNode* node);
 
 void AddSkeleton(USkeletonNode* oNode, USkeletonNode* aNode, vector<int> mapping, float lthreshold = 1);
-void AddSkeleton(USkeletonNode* oNode, USkeletonNode* aNode, USkeletonNode* root, vector<int> mapping, float lthreshold);
+void AddSkeleton(USkeletonNode* oNode, float oDist, USkeletonNode* aNode, float aDist, USkeletonNode* root, vector<int> mapping, float lthreshold);
 
 
 
