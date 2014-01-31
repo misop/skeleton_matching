@@ -35,6 +35,7 @@
     <Import Project="Boost145d.props" />
     <Import Project="tnt.props" />
     <Import Project="mmath_sklnode.props" />
+    <Import Project="glm.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -81,6 +82,7 @@
     <ClCompile Include="GraphMatcher.cpp" />
     <ClCompile Include="GraphMatchingEvaluator.cpp" />
     <ClCompile Include="GraphNodeMatch.cpp" />
+    <ClCompile Include="m_math_additions.cpp" />
     <ClCompile Include="SkeletonGraph.cpp" />
     <ClCompile Include="SkeletonGraphNode.cpp" />
     <ClCompile Include="SkeletonMatchNode.cpp" />
@@ -93,6 +95,7 @@
     <ClInclude Include="GraphMatcher.h" />
     <ClInclude Include="GraphMatchingEvaluator.h" />
     <ClInclude Include="GraphNodeMatch.h" />
+    <ClInclude Include="m_math_additions.h" />
     <ClInclude Include="SkeletonGraph.h" />
     <ClInclude Include="SkeletonGraphNode.h" />
     <ClInclude Include="SkeletonMatchNode.h" />

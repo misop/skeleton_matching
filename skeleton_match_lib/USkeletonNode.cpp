@@ -1,7 +1,10 @@
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "USkeletonNode.h"
 #include "Utility.h"
+#include "m_math_additions.h"
+#include <deque>
 
+using namespace std;
 
 USkeletonNode::USkeletonNode(void)
 {
@@ -193,7 +196,7 @@ SkeletonNode* USkeletonNode::ToSkeletonNode() {
 	SkeletonNode* skl = new SkeletonNode();
 	skl->id = id;
 	skl->point = point;
-	skl->cyclic = count;
+	//skl->cyclic = count;
 
 	for (int i = 0; i < nodes.size(); i++) {
 		SkeletonNode* nskl = nodes[i]->ToSkeletonNode();
@@ -204,20 +207,44 @@ SkeletonNode* USkeletonNode::ToSkeletonNode() {
 	return skl;
 }
 
-void USkeletonNode::CalculateCorrespondingDoF(USkeletonNode *bind) {
+void USkeletonNode::CalculateCorrespondingDoF(USkeletonNode* bind, float threshold, float axisThreshold) {
+	bind->axisAngles.push_back(CVector4(0, 0, 0, 1));
+	for (int i = 0; i < nodes.size(); i++) {
+		if (i < bind->nodes.size()) {
+			nodes[i]->CalculateCorrespondingDoF(bind->nodes[i], glm::mat4(1.0), threshold, axisThreshold);
+		}
+	}
+}
+
+void USkeletonNode::CalculateCorrespondingDoF(USkeletonNode* bind, glm::mat4 M, float threshold, float axisThreshold) {
 	//have to be the same skeleton just posed differently
 	//this is in bind position
-	axisAngle = CVector4(0, 0, 0, 1);
+	CVector4 axisAngle = CVector4(0, 0, 0, 1);
 
-	if (parent != NULL) {
-		CVector3 u = CVector3(1, 0, 0);
-		CVector3 v = CVector3(1, 0, 0);
-		//calculate DoF somehow
+	//rotation from bind to this skeleton
+	CVector3 bPoint = TransformCPoint(bind->point, M);
+	CVector3 bpPoint = TransformCPoint(bind->parent->point, M);
+	CVector3 u = Normalize(bPoint - bpPoint);
+	CVector3 v = Normalize(point - parent->point);
+
+	Quaternion q = MPQuaternionBetweenVectors(u, v);
+	axisAngle = QuaternionToAxisAngle(q);
+	axisAngle.s = axisAngle.s*180.0f/M_PI;
+
+	//if (axisAngle.s*180.0f/M_PI > threshold) {
+	if (axisAngle.s > threshold) {
+		if (UniqueAxis(bind->axisAngles, axisAngle, axisThreshold)) {
+			AddRotation(M, axisAngle, parent->point);
+			bind->axisAngles.push_back(axisAngle);
+		}
+	} else {
+		axisAngle = CVector4(0, 0, 0, 1);
 	}
+	//bind->axisAngles.push_back(axisAngle);
 
 	for (int i = 0; i < nodes.size(); i++) {
 		if (i < bind->nodes.size()) {
-			nodes[i]->CalculateCorrespondingDoF(bind->nodes[i]);
+			nodes[i]->CalculateCorrespondingDoF(bind->nodes[i], M, threshold, axisThreshold);
 		}
 	}
 }
@@ -288,4 +315,37 @@ void AddSkeleton(USkeletonNode* oNode, float oDist, USkeletonNode* aNode, float 
 			}
 		}
 	}
+}
+
+void RecalculateIDsAndExportOutput(USkeletonNode* node, vector<MatchingStruct>& output) {
+	deque<USkeletonNode*> queue;
+	queue.push_back(node);
+
+	int id = 0;
+	while (!queue.empty()) {
+		USkeletonNode* aNode = queue.front();
+		queue.pop_front();
+
+		output.push_back(MatchingStruct(aNode->id, aNode->count, aNode->axisAngles.size()));
+		aNode->id = id;
+		id++;
+
+		for (int i = 0; i < aNode->nodes.size(); i++) {
+			queue.push_back(aNode->nodes[i]);
+		}
+	}
+}
+
+bool UniqueAxis(vector<CVector4>& axisAngles, CVector4 axis, float threshold) {
+	CVector3 u(axis.i, axis.j, axis.k);
+
+	for (int i = 0; i < axisAngles.size(); i++) {
+		CVector3 v(axisAngles[i].i, axisAngles[i].j, axisAngles[i].k);
+		float dotProd = fabs(Dot(u, v));
+		if (dotProd > threshold) {
+			return false;
+		}
+	}
+
+	return true;
 }

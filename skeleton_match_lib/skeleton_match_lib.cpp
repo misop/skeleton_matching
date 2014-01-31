@@ -1,8 +1,10 @@
+#include "stdafx.h"
 #include "skeleton_match_lib.h"
 #include <string>
 #include "SkeletonMatchNode.h"
 #include "GraphMatcher.h"
 #include "USkeletonNode.h"
+#include <math.h>
 
 using namespace std;
 
@@ -27,7 +29,10 @@ float AvarageLength(USkeletonNode* root) {
 	return length/nodes;
 }
 
-vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, float thresholdPercent) {
+vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, vector<MatchingStruct>& output, float thresholdPercent, float angleThreshold, float axisAngleThreshold, bool symmetric) {
+	axisAngleThreshold = axisAngleThreshold * M_PI / 180.0;
+	axisAngleThreshold = cos(axisAngleThreshold);
+	
 	vector<SkeletonMatchNode *> skls;
 	for (int i = 0; i < skeletons.size(); i++) {
 		SkeletonMatchNode* skl = new SkeletonMatchNode(skeletons[i]);
@@ -54,11 +59,13 @@ vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, float th
 		}
 	}
 	vector<vector<int> > mappings;
+	vector<vector<int> > mappingsSym;
 	for (int i = 0; i < G.size(); i++) {
 		GraphMatcher gm;
 		gm.MatchGraphs(G[smalestID], G[i]);
 		gm.SortFoundMatchings();
 		mappings.push_back(gm.bestMatchings[0]);
+		mappingsSym.push_back(gm.bestMatchings.back());
 	}
 
 	USkeletonNode* uroot = new USkeletonNode(G[smalestID]);
@@ -69,15 +76,24 @@ vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, float th
 		//AddSkeleton(uroot, toAdd, uroot, mappings[i]);
 		AddSkeleton(uroot, toAdd, mappings[i], threshold);
 		skelets.push_back(toAdd);
+		if (symmetric) {
+			USkeletonNode* toAddS = new USkeletonNode(G[i], uroot, mappingsSym[i]);
+			AddSkeleton(uroot, toAddS, mappingsSym[i], threshold);
+			delete toAddS;
+		}
 	}
 
 	vector<SkeletonNode* > result;
-	result.push_back(uroot->ToSkeletonNode());
+	//result.push_back(uroot->ToSkeletonNode());
+	result.push_back(NULL);
 	for (int i = 0; i < skelets.size(); i++) {
 		//result.push_back(skelets[i]->ToSkeletonNode());
 		AddSkeleton(skelets[i], uroot, mappings[i], threshold);
+		skelets[i]->CalculateCorrespondingDoF(uroot, angleThreshold, axisAngleThreshold);
 		result.push_back(skelets[i]->ToSkeletonNode());
 	}
+	RecalculateIDsAndExportOutput(uroot, output);
+	result[0] = uroot->ToSkeletonNode();
 
 	for (int i = 0; i < skls.size(); i++) {
 		delete skls[i];

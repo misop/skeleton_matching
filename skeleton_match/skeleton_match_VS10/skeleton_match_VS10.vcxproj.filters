@@ -48,6 +48,9 @@
     <ClCompile Include="m_math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="m_math_additions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GraphEdge.h">
@@ -90,6 +93,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SkeletonNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="m_math_additions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

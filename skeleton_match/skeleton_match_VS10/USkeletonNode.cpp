@@ -204,20 +204,41 @@ SkeletonNode* USkeletonNode::ToSkeletonNode() {
 	return skl;
 }
 
-void USkeletonNode::CalculateCorrespondingDoF(USkeletonNode *bind) {
+void USkeletonNode::CalculateCorrespondingDoF(USkeletonNode* bind, float threshold) {
+	axisAngles.push_back(CVector4(0, 0, 0, 1));
+	for (int i = 0; i < nodes.size(); i++) {
+		if (i < bind->nodes.size()) {
+			nodes[i]->CalculateCorrespondingDoF(bind->nodes[i], glm::mat4(1.0), threshold);
+		}
+	}
+}
+
+void USkeletonNode::CalculateCorrespondingDoF(USkeletonNode* bind, glm::mat4 M, float threshold) {
 	//have to be the same skeleton just posed differently
 	//this is in bind position
-	axisAngle = CVector4(0, 0, 0, 1);
+	CVector4 axisAngle = CVector4(0, 0, 0, 1);
 
-	if (parent != NULL) {
-		CVector3 u = CVector3(1, 0, 0);
-		CVector3 v = CVector3(1, 0, 0);
-		//calculate DoF somehow
+	//rotation from bind to this skeleton
+	CVector3 bPoint = TransformCPoint(bind->point, M);
+	CVector3 bpPoint = TransformCPoint(bind->parent->point, M);
+	CVector3 u = Normalize(bPoint - bpPoint);
+	CVector3 v = Normalize(point - parent->point);
+
+	Quaternion q = MPQuaternionBetweenVectors(u, v);
+	axisAngle = QuaternionToAxisAngle(q);
+	axisAngle.s = axisAngle.s*180.0f/M_PI;
+
+	//if (axisAngle.s*180.0f/M_PI > threshold) {
+	if (axisAngle.s > threshold) {
+		AddRotation(M, axisAngle, parent->point);
+	} else {
+		axisAngle = CVector4(0, 0, 0, 1);
 	}
+	axisAngles.push_back(axisAngle);
 
 	for (int i = 0; i < nodes.size(); i++) {
 		if (i < bind->nodes.size()) {
-			nodes[i]->CalculateCorrespondingDoF(bind->nodes[i]);
+			nodes[i]->CalculateCorrespondingDoF(bind->nodes[i], M, threshold);
 		}
 	}
 }

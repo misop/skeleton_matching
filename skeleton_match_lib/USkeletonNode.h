@@ -3,6 +3,8 @@
 #include "SkeletonGraph.h"
 #include <vector>
 #include <s_skeletonNode.h>
+#include <glm\glm.hpp>
+#include <MatchingStruct.h>
 
 using namespace std;
 
@@ -12,7 +14,7 @@ public:
 	int id;
 	int count;
 	CVector3 point;
-	CVector4 axisAngle;
+	vector<CVector4> axisAngles;
 	float parentDist;
 	USkeletonNode* parent;
 	vector<USkeletonNode*> nodes;
@@ -32,13 +34,18 @@ public:
 	void RemoveChild(USkeletonNode* node);
 	bool ReplaceChild(USkeletonNode* child, USkeletonNode* node);
 	SkeletonNode* ToSkeletonNode();
-	void CalculateCorrespondingDoF(USkeletonNode* bind);
+	void CalculateCorrespondingDoF(USkeletonNode* bind, float threshold, float axisThreshold);
+	void CalculateCorrespondingDoF(USkeletonNode* bind, glm::mat4 M, float threshold, float axisThreshold);
 };
 
 USkeletonNode* SkipSameIds(USkeletonNode* node);
 
 void AddSkeleton(USkeletonNode* oNode, USkeletonNode* aNode, vector<int> mapping, float lthreshold = 1);
 void AddSkeleton(USkeletonNode* oNode, float oDist, USkeletonNode* aNode, float aDist, USkeletonNode* root, vector<int> mapping, float lthreshold);
+
+void RecalculateIDsAndExportOutput(USkeletonNode* node, vector<MatchingStruct>& output);
+
+bool UniqueAxis(vector<CVector4>& axisAngles, CVector4 axis, float threshold);
 
 
 

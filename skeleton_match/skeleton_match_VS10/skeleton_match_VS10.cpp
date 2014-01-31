@@ -139,6 +139,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	float threshold = AvarageLength(uroot) / 3.0;
 	AddSkeleton(uroot, toAdd, matching, threshold);
+	AddSkeleton(toAdd, uroot, matching, threshold);
+
+	toAdd->CalculateCorrespondingDoF(uroot, 30);
 
 	return 0;
 }

@@ -45,6 +45,9 @@
     <ClCompile Include="USkeletonNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="m_math_additions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="skeleton_match_lib.h">
@@ -84,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GraphNodeMatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="m_math_additions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
