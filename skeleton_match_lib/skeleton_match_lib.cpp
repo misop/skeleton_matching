@@ -29,17 +29,49 @@ float AvarageLength(USkeletonNode* root) {
 	return length/nodes;
 }
 
+std::vector<int> MatchSkeletons(SkeletonNode* skl1, SkeletonNode* skl2) {
+	SkeletonMatchNode *sklA = new SkeletonMatchNode(skl1);
+	SkeletonMatchNode *sklB = new SkeletonMatchNode(skl2);
+
+	int nodesA = RecalculateIDs(sklA);
+	int nodesB = RecalculateIDs(sklB);
+
+	SkeletonGraph* A = new SkeletonGraph();
+	A->CreateGraphFromSkeleton(sklA, nodesA);
+	SkeletonGraph* B = new SkeletonGraph();
+	B->CreateGraphFromSkeleton(sklB, nodesB);
+
+	GraphMatcher gm;
+	gm.MatchGraphs(A, B);
+	gm.SortFoundMatchings();
+
+	delete sklA;
+	delete sklB;
+	delete A;
+	delete B;
+
+	if (gm.bestMatchings.size() > 0) {
+		return gm.bestMatchings[0];
+	}
+
+	vector<int> empty;
+	return empty;
+}
+
 vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, vector<MatchingStruct>& output, float thresholdPercent, float angleThreshold, float axisAngleThreshold, bool symmetric) {
 	axisAngleThreshold = axisAngleThreshold * M_PI / 180.0;
 	axisAngleThreshold = cos(axisAngleThreshold);
-	
+
 	vector<SkeletonMatchNode *> skls;
+	vector<int> numOfNodes;
 	for (int i = 0; i < skeletons.size(); i++) {
 		SkeletonMatchNode* skl = new SkeletonMatchNode(skeletons[i]);
 		FixParents(skl);
+		int nodes = CountNodes(skl);
 		skl = PrepareForTriming(skl);
 		skl->Trim();
 		skls.push_back(skl);
+		numOfNodes.push_back(nodes);
 	}
 
 	vector<SkeletonGraph* > G;
@@ -53,7 +85,7 @@ vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, vector<M
 	int smalestID = 0;
 	int snodes = 0;
 	for (int i = 0; i < G.size(); i++) {
-		if (i == 0 || snodes > G[i]->nodes.size()) {
+		if (i == 0 || snodes > G[i]->nodes.size() || (snodes == G[i]->nodes.size() && numOfNodes[smalestID] > numOfNodes[i])) {
 			snodes = G[i]->nodes.size();
 			smalestID = i;
 		}
@@ -71,10 +103,14 @@ vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, vector<M
 	USkeletonNode* uroot = new USkeletonNode(G[smalestID]);
 	vector<USkeletonNode* > skelets;
 	float threshold = AvarageLength(uroot) * thresholdPercent;
+	//CleanUpCount(uroot);
+	//Simplify(uroot, threshold);
 	for (int i = 0; i < G.size(); i++) {
 		USkeletonNode* toAdd = new USkeletonNode(G[i], uroot, mappings[i]);
+		//Simplify(toAdd, threshold);
 		//AddSkeleton(uroot, toAdd, uroot, mappings[i]);
-		AddSkeleton(uroot, toAdd, mappings[i], threshold);
+		if (i == 1)
+			AddSkeleton(uroot, toAdd, mappings[i], threshold);
 		skelets.push_back(toAdd);
 		if (symmetric) {
 			USkeletonNode* toAddS = new USkeletonNode(G[i], uroot, mappingsSym[i]);
@@ -90,10 +126,12 @@ vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, vector<M
 		//result.push_back(skelets[i]->ToSkeletonNode());
 		AddSkeleton(skelets[i], uroot, mappings[i], threshold);
 		skelets[i]->CalculateCorrespondingDoF(uroot, angleThreshold, axisAngleThreshold);
+		RecalculateIDs(skelets[i]);
 		result.push_back(skelets[i]->ToSkeletonNode());
 	}
 	RecalculateIDsAndExportOutput(uroot, output);
 	result[0] = uroot->ToSkeletonNode();
+	output[0].matched = skelets.size();
 
 	for (int i = 0; i < skls.size(); i++) {
 		delete skls[i];

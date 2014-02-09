@@ -43,9 +43,13 @@ USkeletonNode* SkipSameIds(USkeletonNode* node);
 void AddSkeleton(USkeletonNode* oNode, USkeletonNode* aNode, vector<int> mapping, float lthreshold = 1);
 void AddSkeleton(USkeletonNode* oNode, float oDist, USkeletonNode* aNode, float aDist, USkeletonNode* root, vector<int> mapping, float lthreshold);
 
+void RecalculateIDs(USkeletonNode* node);
 void RecalculateIDsAndExportOutput(USkeletonNode* node, vector<MatchingStruct>& output);
 
 bool UniqueAxis(vector<CVector4>& axisAngles, CVector4 axis, float threshold);
 
+void CleanUpCount(USkeletonNode* node);
 
+void GetCloseDescendants(USkeletonNode* node, float threshold, vector<CVector3>& positions, vector<USkeletonNode*>& descendants, bool clear = false);
 
+void Simplify(USkeletonNode* node, float threshold);

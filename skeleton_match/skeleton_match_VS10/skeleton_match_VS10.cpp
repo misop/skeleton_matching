@@ -104,9 +104,9 @@ float AvarageLength(USkeletonNode* root) {
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	SkeletonNode* sknA = LoadSkeletonFromFile("skeletons/barbie2_24seg_2ite.skl");
+	SkeletonNode* sknA = LoadSkeletonFromFile("skeletons/5k_buzz_pos1.skl");
 	//SkeletonNode* sknB = LoadSkeletonFromFile("skeletons/barbie4_24seg_2ite.skl");
-	SkeletonNode* sknB = LoadSkeletonFromFile("skeletons/barbie3_24seg_2ite.skl");
+	SkeletonNode* sknB = LoadSkeletonFromFile("skeletons/5k_buzz_pos3.skl");
 	SkeletonMatchNode* sklA = new SkeletonMatchNode(sknA);
 	SkeletonMatchNode* sklB = new SkeletonMatchNode(sknB);
 	//SkeletonMatchNode* sklA = CreateSkeletonA();

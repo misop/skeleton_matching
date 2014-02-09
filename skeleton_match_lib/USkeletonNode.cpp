@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "USkeletonNode.h"
 #include "Utility.h"
-#include "m_math_additions.h"
+#include <m_math_additions.h>
 #include <deque>
 
 using namespace std;
@@ -32,7 +32,20 @@ USkeletonNode::USkeletonNode(int _id, CVector3 _point, float _parentDist, USkele
 USkeletonNode::USkeletonNode(USkeletonNode* root, USkeletonNode* addRoot, float _parentDist) {
 	id = root->id;
 	count = 1;
-	point = addRoot->point;
+	//point = addRoot->point;
+	if (addRoot->parent != NULL && addRoot->parent->parent != NULL) {
+		CVector3 u = Normalize(addRoot->parent->point - addRoot->parent->parent->point);
+		CVector3 v = Normalize(addRoot->point - addRoot->parent->point);
+		Quaternion q = MPQuaternionBetweenVectors(u, v);
+		CVector3 w = Normalize(root->point - root->parent->point);
+		w = QuaternionRotateVector(q, w);
+		point = root->point + w * _parentDist;
+	} else if (addRoot->parent != NULL) {
+		CVector3 u = Normalize(addRoot->point - addRoot->parent->point);
+		point = root->point + u * _parentDist;
+	} else {
+		point = root->point + Normalize(addRoot->point - root->point) * _parentDist;
+	}
 	parent = root;
 	parentDist = _parentDist;
 	parent->nodes.push_back(this);
@@ -208,7 +221,7 @@ SkeletonNode* USkeletonNode::ToSkeletonNode() {
 }
 
 void USkeletonNode::CalculateCorrespondingDoF(USkeletonNode* bind, float threshold, float axisThreshold) {
-	bind->axisAngles.push_back(CVector4(0, 0, 0, 1));
+	//bind->axisAngles.push_back(CVector4(0, 0, 0, 1));
 	for (int i = 0; i < nodes.size(); i++) {
 		if (i < bind->nodes.size()) {
 			nodes[i]->CalculateCorrespondingDoF(bind->nodes[i], glm::mat4(1.0), threshold, axisThreshold);
@@ -231,10 +244,11 @@ void USkeletonNode::CalculateCorrespondingDoF(USkeletonNode* bind, glm::mat4 M, 
 	axisAngle = QuaternionToAxisAngle(q);
 	axisAngle.s = axisAngle.s*180.0f/M_PI;
 
+	M = AddRotation(M, axisAngle, parent->point);
 	//if (axisAngle.s*180.0f/M_PI > threshold) {
 	if (axisAngle.s > threshold) {
 		if (UniqueAxis(bind->axisAngles, axisAngle, axisThreshold)) {
-			AddRotation(M, axisAngle, parent->point);
+			//AddRotation(M, axisAngle, parent->point);
 			bind->axisAngles.push_back(axisAngle);
 		}
 	} else {
@@ -259,7 +273,8 @@ USkeletonNode* SkipSameIds(USkeletonNode* node) {
 }
 
 void AddSkeleton(USkeletonNode* oNode, USkeletonNode* aNode, vector<int> mapping, float lthreshold) {
-	//move both
+	//add for root
+	oNode->count++;
 	for (int i = 0; i < aNode->nodes.size(); i++) {
 		if (i < oNode->nodes.size()) {
 			AddSkeleton(oNode->nodes[i], oNode->nodes[i]->parentDist, aNode->nodes[i], aNode->nodes[i]->parentDist, oNode, mapping, lthreshold);
@@ -281,14 +296,42 @@ void AddSkeleton(USkeletonNode* oNode, float oDist, USkeletonNode* aNode, float 
 	//if within threshold don't add and skip
 	if (fabs(oDist - aDist) < lthreshold) {
 		//move both
+		//oNode->point = oNode->point * (float)oNode->count;
+		//oNode->point = oNode->point + aNode->point;
 		aNode->count++;
+
+		vector<CVector3> positions;
+		vector<USkeletonNode*> descendants;
+		GetCloseDescendants(aNode, lthreshold, positions, descendants);
+
+		/*for (int i = 0; i < positions.size(); i++) {
+			oNode->point = oNode->point + positions[i];
+			oNode->count++;
+		}
+		oNode->point = oNode->point / (float)oNode->count;*/
+
+		/*for (int i = 0; i < oNode->nodes.size(); i++) {
+			oNode->nodes[i]->parentDist = Length(oNode->point - oNode->nodes[i]->point);
+		}*/
+
+		for (int i = 0; i < descendants.size(); i++) {
+			float dist = Length(aNode->point - descendants[i]->point);
+			if (i < oNode->nodes.size()) {
+				AddSkeleton(oNode->nodes[i], oNode->nodes[i]->parentDist, descendants[i], dist, oNode, mapping, lthreshold);
+			} else {
+				AddSkeleton(NULL, 0, descendants[i], dist, oNode, mapping, lthreshold);
+			}
+		}
+
+		/*aNode->count++;
+		//oNode->count++;
 		for (int i = 0; i < aNode->nodes.size(); i++) {
 			if (i < oNode->nodes.size()) {
 				AddSkeleton(oNode->nodes[i], oNode->nodes[i]->parentDist, aNode->nodes[i], aNode->nodes[i]->parentDist, oNode, mapping, lthreshold);
 			} else {
 				AddSkeleton(NULL, 0, aNode->nodes[i], aNode->nodes[i]->parentDist, oNode, mapping, lthreshold);
 			}
-		}
+		}*/
 	} else if (oDist < aDist) {//if oNode is closer add just skip
 		//move oNode
 		if (oNode->nodes.size() > 0) {
@@ -313,6 +356,24 @@ void AddSkeleton(USkeletonNode* oNode, float oDist, USkeletonNode* aNode, float 
 			for (int i = 1; i < aNode->nodes.size(); i++) {
 				AddSkeleton(NULL, 0, aNode->nodes[i], aNode->nodes[i]->parentDist, node, mapping, lthreshold);
 			}
+		}
+	}
+}
+
+void RecalculateIDs(USkeletonNode* node) {
+	deque<USkeletonNode*> queue;
+	queue.push_back(node);
+
+	int id = 0;
+	while (!queue.empty()) {
+		USkeletonNode* aNode = queue.front();
+		queue.pop_front();
+
+		aNode->id = id;
+		id++;
+
+		for (int i = 0; i < aNode->nodes.size(); i++) {
+			queue.push_back(aNode->nodes[i]);
 		}
 	}
 }
@@ -348,4 +409,98 @@ bool UniqueAxis(vector<CVector4>& axisAngles, CVector4 axis, float threshold) {
 	}
 
 	return true;
+}
+
+void CleanUpCount(USkeletonNode* node) {
+	deque<USkeletonNode*> queue;
+	queue.push_back(node);
+
+	while (!queue.empty()) {
+		USkeletonNode* aNode = queue.front();
+		queue.pop_front();
+
+		aNode->count = 0;
+
+		for (int i = 0; i < aNode->nodes.size(); i++) {
+			queue.push_back(aNode->nodes[i]);
+		}
+	}
+}
+
+void GetCloseDescendants(USkeletonNode* node, float threshold, vector<CVector3>& positions, vector<USkeletonNode*>& descendants, bool clear) {
+	positions.clear();
+	descendants.clear();
+
+	for (int i = 0; i < node->nodes.size(); i++) {
+		USkeletonNode* aNode = node->nodes[i];
+		float dist = aNode->parentDist;
+		while (dist < threshold && aNode->nodes.size() == 1) {
+			aNode = aNode->nodes[0];
+			positions.push_back(aNode->point);
+			if (clear) {
+				aNode->nodes.clear();
+				delete aNode;
+			}
+		}
+		descendants.push_back(aNode);
+	}
+}
+
+/*void GetCloseDescendants(USkeletonNode* node, float threshold, vector<CVector3>& positions, vector<USkeletonNode*>& descendants, bool clear) {
+	positions.clear();
+	descendants.clear();
+
+	deque<USkeletonNode*> queue;
+	deque<float> distqueue;
+	for (int i = 0; i < node->nodes.size(); i++) {
+		queue.push_back(node->nodes[i]);
+		distqueue.push_back(0);
+	}
+
+	while (!queue.empty()) {
+		USkeletonNode* aNode = queue.front();
+		float dist = distqueue.front();
+		queue.pop_front();
+		distqueue.pop_front();
+
+		dist += aNode->parentDist;
+		if (dist < threshold) {
+			positions.push_back(aNode->point);
+
+			for (int i = 0; i < aNode->nodes.size(); i++) {
+				queue.push_back(aNode->nodes[i]);
+				distqueue.push_back(dist);
+			}
+			if (clear) {
+				aNode->nodes.clear();
+				delete aNode;
+			}
+		} else {
+			descendants.push_back(aNode);
+		}
+	}
+}*/
+
+void Simplify(USkeletonNode* node, float threshold) {
+	vector<CVector3> positions;
+	vector<USkeletonNode*> descendants;
+	GetCloseDescendants(node, threshold, positions, descendants, true);
+
+	node->point = node->point * (float)node->count;
+	for (int i = 0; i < positions.size(); i++) {
+		node->point = node->point + positions[i];
+		node->count++;
+	}
+	node->point = node->point / (float)node->count;
+
+	node->nodes.clear();
+	for (int i = 0; i < descendants.size(); i++) {
+		descendants[i]->parent = node;
+		descendants[i]->parentDist = Length(descendants[i]->point - node->point);
+		node->nodes.push_back(descendants[i]);
+	}
+
+	for (int i = 0; i < node->nodes.size(); i++) {
+		Simplify(node->nodes[i], threshold);
+	}
 }

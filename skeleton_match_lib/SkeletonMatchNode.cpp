@@ -102,6 +102,25 @@ int RecalculateIDs(SkeletonMatchNode* node) {
 	return id;
 }
 
+int CountNodes(SkeletonMatchNode* node) {
+	deque<SkeletonMatchNode*> queue;
+	queue.push_back(node);
+	int nodes = 0;
+
+	while (!queue.empty()) {
+		SkeletonMatchNode* aNode = queue.front();
+		queue.pop_front();
+
+		nodes++;
+
+		for (int i = 0; i < aNode->nodes.size(); i++) {
+			queue.push_back(aNode->nodes[i]);
+		}
+	}
+
+	return nodes;
+}
+
 void SwapRoot(SkeletonMatchNode* root, SkeletonMatchNode* node) {
 	//node is the first that is BNP
 	//everything going from root is OK

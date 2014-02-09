@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>C:\glm-0.9.4.4\;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\mm\Documents\SVN\Skeletor\Lib\include\glm;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup />

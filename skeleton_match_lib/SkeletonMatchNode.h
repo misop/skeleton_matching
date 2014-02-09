@@ -45,6 +45,7 @@ BOOST_CLASS_VERSION(SkeletonMatchNode, 0)
 SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist);
 SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist, vector<CVector3> &pos);
 int RecalculateIDs(SkeletonMatchNode* node);
+int CountNodes(SkeletonMatchNode* node);
 void SwapRoot(SkeletonMatchNode* root, SkeletonMatchNode* node);
 SkeletonMatchNode* PrepareForTriming(SkeletonMatchNode* node);
 void FixParents(SkeletonMatchNode* node);
