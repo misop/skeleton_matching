@@ -104,13 +104,12 @@ vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, vector<M
 	vector<USkeletonNode* > skelets;
 	float threshold = AvarageLength(uroot) * thresholdPercent;
 	//CleanUpCount(uroot);
-	//Simplify(uroot, threshold);
+	Simplify(uroot, threshold);
 	for (int i = 0; i < G.size(); i++) {
 		USkeletonNode* toAdd = new USkeletonNode(G[i], uroot, mappings[i]);
-		//Simplify(toAdd, threshold);
+		Simplify(toAdd, threshold);
 		//AddSkeleton(uroot, toAdd, uroot, mappings[i]);
-		if (i == 1)
-			AddSkeleton(uroot, toAdd, mappings[i], threshold);
+		AddSkeleton(uroot, toAdd, mappings[i], threshold);
 		skelets.push_back(toAdd);
 		if (symmetric) {
 			USkeletonNode* toAddS = new USkeletonNode(G[i], uroot, mappingsSym[i]);

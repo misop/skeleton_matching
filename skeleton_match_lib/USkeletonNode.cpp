@@ -308,9 +308,9 @@ void AddSkeleton(USkeletonNode* oNode, float oDist, USkeletonNode* aNode, float 
 			oNode->point = oNode->point + positions[i];
 			oNode->count++;
 		}
-		oNode->point = oNode->point / (float)oNode->count;*/
+		oNode->point = oNode->point / (float)oNode->count;
 
-		/*for (int i = 0; i < oNode->nodes.size(); i++) {
+		for (int i = 0; i < oNode->nodes.size(); i++) {
 			oNode->nodes[i]->parentDist = Length(oNode->point - oNode->nodes[i]->point);
 		}*/
 
