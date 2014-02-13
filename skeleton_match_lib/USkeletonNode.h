@@ -2,6 +2,7 @@
 #include <m_math.h>
 #include "SkeletonGraph.h"
 #include <vector>
+#include <map>
 #include <s_skeletonNode.h>
 #include <glm\glm.hpp>
 #include <MatchingStruct.h>
@@ -23,6 +24,7 @@ public:
 	USkeletonNode(int _id, CVector3 _point, USkeletonNode* _parent);
 	USkeletonNode(int _id, CVector3 _point, float _parentDist, USkeletonNode* _parent);
 	USkeletonNode(USkeletonNode* root, USkeletonNode* addRoot, float _parentDist);
+	USkeletonNode(SkeletonGraphNode* N, int _id);
 	USkeletonNode(SkeletonGraph* G, int _id = -1);
 	USkeletonNode(SkeletonGraph* G, USkeletonNode* root, int gid, int skipId);
 	USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root);
@@ -36,6 +38,22 @@ public:
 	SkeletonNode* ToSkeletonNode();
 	void CalculateCorrespondingDoF(USkeletonNode* bind, float threshold, float axisThreshold);
 	void CalculateCorrespondingDoF(USkeletonNode* bind, glm::mat4 M, float threshold, float axisThreshold);
+};
+
+struct DataStruct {
+	USkeletonNode* root;
+	int ignoreID;
+	int selectID;
+	int* id;
+
+	DataStruct(USkeletonNode* _root, int _ignore, int _select, int* _id) : root(_root), ignoreID(_ignore), selectID(_select), id(_id) {};
+};
+
+struct NodeDist {
+	USkeletonNode* node;
+	float dist;
+
+	NodeDist(USkeletonNode* _node, float _dist) : node(_node), dist(_dist) {};
 };
 
 USkeletonNode* SkipSameIds(USkeletonNode* node);
@@ -53,3 +71,14 @@ void CleanUpCount(USkeletonNode* node);
 void GetCloseDescendants(USkeletonNode* node, float threshold, vector<CVector3>& positions, vector<USkeletonNode*>& descendants, bool clear = false);
 
 void Simplify(USkeletonNode* node, float threshold);
+
+USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root, int fromID, int *_id);
+USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root, int fromID, int *_id, vector<NodeDist>& out);
+
+vector<USkeletonNode*> RecreateSkeletonsWithMatching(SkeletonGraph* A, SkeletonGraph* B, vector<int>& matching, map<int, MatchingSkeletonStruct>& o_map);
+
+void RecreateSkeletonsWithMatching(SkeletonGraph* A, DataStruct dA, SkeletonGraph* B, DataStruct dB, vector<int>& matching, map<int, MatchingSkeletonStruct>& o_map);
+
+void RecreateSkeleton(SkeletonGraph* G, DataStruct d);
+
+void AddToMap(vector<NodeDist>& outA, vector<NodeDist>& outB, map<int, MatchingSkeletonStruct>& o_map);

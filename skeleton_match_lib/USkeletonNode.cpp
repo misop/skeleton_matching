@@ -3,6 +3,9 @@
 #include "Utility.h"
 #include <m_math_additions.h>
 #include <deque>
+#include <set>
+
+typedef pair<int, MatchingSkeletonStruct> o_map_pair;
 
 using namespace std;
 
@@ -67,6 +70,14 @@ USkeletonNode::USkeletonNode(USkeletonNode* root, USkeletonNode* addRoot, float 
 	}
 }*/
 
+USkeletonNode::USkeletonNode(SkeletonGraphNode* N, int _id) {
+	id = _id;
+	parent = NULL;
+	point = N->point;
+	parentDist = 0;
+	count = 1;
+}
+
 USkeletonNode::USkeletonNode(SkeletonGraph* G, int _id) {
 	if (_id == -1) _id = G->branchNodes[0]->id;
 	parent = NULL;
@@ -117,6 +128,7 @@ USkeletonNode* USkeletonNode::SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode*
 
 	return croot;
 }
+
 //other is intersection skeleton that has all nodes mapped to other nodes
 USkeletonNode::USkeletonNode(SkeletonGraph* G, USkeletonNode* other, vector<int> mapping) {
 	id = mapping[other->id];
@@ -502,5 +514,190 @@ void Simplify(USkeletonNode* node, float threshold) {
 
 	for (int i = 0; i < node->nodes.size(); i++) {
 		Simplify(node->nodes[i], threshold);
+	}
+}
+
+USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root, int fromID, int *_id) {
+	bool reverse = (ge.fromId != fromID);
+	USkeletonNode* croot = root;
+
+	for (int i = 0; i < ge.positions.size(); i++) {
+		int idx = reverse ? (ge.positions.size() - i - 1) : i;
+		USkeletonNode* node = new USkeletonNode();
+		node->id = *_id;
+		(*_id)++;
+		node->point = ge.positions[idx];
+		node->parent = croot;
+		node->parentDist = Magnitude(node->point - croot->point);
+
+		croot->nodes.push_back(node);
+
+		croot = node;
+	}
+
+	return croot;
+}
+
+USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root, int fromID, int *_id, vector<NodeDist>& out) {
+	bool reverse = (ge.fromId != fromID);
+	USkeletonNode* croot = root;
+
+	float dist = 0;
+	float maxDist = ge.dist;
+	for (int i = 0; i < ge.positions.size(); i++) {
+		int idx = reverse ? (ge.positions.size() - i - 1) : i;
+		USkeletonNode* node = new USkeletonNode();
+		node->id = *_id;
+		(*_id)++;
+		node->point = ge.positions[idx];
+		node->parent = croot;
+		node->parentDist = Magnitude(node->point - croot->point);
+		dist += node->parentDist;
+
+		croot->nodes.push_back(node);
+
+		out.push_back(NodeDist(node, dist/maxDist));
+
+		croot = node;
+	}
+
+	return croot;
+}
+
+vector<USkeletonNode*> RecreateSkeletonsWithMatching(SkeletonGraph* A, SkeletonGraph* B, vector<int>& matching, map<int, MatchingSkeletonStruct>& o_map) {
+	bool selected = false;
+	int idx = -1;
+	for (int i = 0; i < A->branchNodes.size(); i++) {
+		if (matching[A->branchNodes[i]->id] != -1) {
+			selected = true;
+			idx = A->branchNodes[i]->id;
+			break;
+		}
+	}
+	if (!selected) {
+		for (int i = 0; i < A->nodes.size(); i++) {
+			if (matching[A->nodes[i]->id] != -1) {
+				selected = true;
+				idx = A->nodes[i]->id;
+				break;
+			}
+		}
+	}
+	if (!selected) return vector<USkeletonNode*>(); //empty matching
+
+	int idA = 0;
+	int idB = 0;
+
+	USkeletonNode* sklA = new USkeletonNode(A->nodes[idx], idA);
+	USkeletonNode* sklB = new USkeletonNode(B->nodes[matching[idx]], idB);
+
+	idA++;
+	idB++;
+
+	//o_map.insert(o_map_pair(sklA->id, MatchingSkeletonStruct(sklB->id)));
+	o_map[sklA->id] = MatchingSkeletonStruct(sklB->id);
+
+	set<int> matched;
+	for (int i = 0; i < A->nodes[idx]->neighborhood.size(); i++) {
+		int sA = A->nodes[idx]->neighborhood[i]->id;
+		if (matching[sA] == -1) {
+			RecreateSkeleton(A, DataStruct(sklA, idx, sA, &idA));
+		} else {
+			int sB = B->nodes[matching[sA]]->id;
+			matched.insert(sB);
+			RecreateSkeletonsWithMatching(A, DataStruct(sklA, idx, sA, &idA), B, DataStruct(sklB, matching[idx], sB, &idB), matching, o_map);
+		}
+	}
+
+	for (int i = 0; i < B->nodes[matching[idx]]->neighborhood.size(); i++) {
+		if (matched.find(B->nodes[matching[idx]]->neighborhood[i]->id) == matched.end()) {
+			int sB = B->nodes[matching[idx]]->neighborhood[i]->id;
+			RecreateSkeleton(B, DataStruct(sklB, matching[idx], sB, &idB));
+		}
+	}
+
+	vector<USkeletonNode*> result;
+	result.push_back(sklA);
+	result.push_back(sklB);
+	return result;
+}
+
+void RecreateSkeletonsWithMatching(SkeletonGraph* A, DataStruct dA, SkeletonGraph* B, DataStruct dB, vector<int>& matching, map<int, MatchingSkeletonStruct>& o_map) {
+	GraphEdge eA;
+	A->AreNeighbors(dA.ignoreID, dA.selectID, eA);
+	vector<NodeDist> outA;
+	USkeletonNode* rootA = SkeletonNodesFromEdge(eA, dA.root, dA.ignoreID, dA.id, outA);
+
+	GraphEdge eB;
+	B->AreNeighbors(dB.ignoreID, dB.selectID, eB);
+	vector<NodeDist> outB;
+	USkeletonNode* rootB = SkeletonNodesFromEdge(eB, dB.root, dB.ignoreID, dB.id, outB);
+
+	USkeletonNode* sklA = new USkeletonNode(A->nodes[dA.selectID], *dA.id);
+	USkeletonNode* sklB = new USkeletonNode(B->nodes[dB.selectID], *dB.id);
+
+	(*dA.id)++;
+	(*dB.id)++;
+
+	sklA->parent = rootA;
+	rootA->nodes.push_back(sklA);
+	sklB->parent = rootB;
+	rootB->nodes.push_back(sklB);
+
+	outA.push_back(NodeDist(sklA, 1.0));
+	outB.push_back(NodeDist(sklB, 1.0));
+
+	AddToMap(outA, outB, o_map);
+
+	set<int> matched;
+	for (int i = 0; i < A->nodes[dA.selectID]->neighborhood.size(); i++) {
+		int sA = A->nodes[dA.selectID]->neighborhood[i]->id;
+		if (sA == dA.ignoreID) continue;
+
+		if (matching[sA] == -1) {
+			RecreateSkeleton(A, DataStruct(sklA, dA.selectID, sA, dA.id));
+		} else {
+			int sB = B->nodes[matching[sA]]->id;
+			matched.insert(sB);
+			RecreateSkeletonsWithMatching(A, DataStruct(sklA, dA.selectID, sA, dA.id), B, DataStruct(sklB, dB.selectID, sB, dB.id), matching, o_map);
+		}
+	}
+
+	for (int i = 0; i < B->nodes[dB.selectID]->neighborhood.size(); i++) {
+		if (matched.find(B->nodes[dB.selectID]->neighborhood[i]->id) == matched.end()) {
+			int sB = B->nodes[dB.selectID]->neighborhood[i]->id;
+			RecreateSkeleton(B, DataStruct(sklB, dB.selectID, sB, dB.id));
+		}
+	}
+}
+
+void RecreateSkeleton(SkeletonGraph* G, DataStruct d) {
+	GraphEdge e;
+	G->AreNeighbors(d.ignoreID, d.selectID, e);
+	USkeletonNode* root = SkeletonNodesFromEdge(e, d.root, d.ignoreID, d.id);
+	USkeletonNode* node = new USkeletonNode(G->nodes[d.selectID], *d.id);
+
+	node->parent = root;
+	root->nodes.push_back(node);
+
+	(*d.id)++;
+
+	for (int i = 0; i < G->nodes[d.selectID]->neighborhood.size(); i++) {
+		if (i != d.ignoreID) {
+			RecreateSkeleton(G, DataStruct(node, G->nodes[d.selectID]->id, G->nodes[d.selectID]->neighborhood[i]->id, d.id));
+		}
+	}
+}
+
+void AddToMap(vector<NodeDist>& outA, vector<NodeDist>& outB, map<int, MatchingSkeletonStruct>& o_map) {
+	int idx = 0;
+	for (int i = 0; i < outB.size(); i++) {
+		if (outB[i].dist <= outA[idx].dist) {
+			o_map[outA[idx].node->id].matched.push_back(outB[i].node->id);
+		} else {
+			idx++;
+			if (idx >= outA.size()) idx = outA.size() - 1;
+			i--;
+		}
 	}
 }

@@ -29,9 +29,16 @@ float AvarageLength(USkeletonNode* root) {
 	return length/nodes;
 }
 
-std::vector<int> MatchSkeletons(SkeletonNode* skl1, SkeletonNode* skl2) {
+std::map<int, MatchingSkeletonStruct> MatchSkeletons(SkeletonNode* skl1, SkeletonNode* skl2) {
 	SkeletonMatchNode *sklA = new SkeletonMatchNode(skl1);
 	SkeletonMatchNode *sklB = new SkeletonMatchNode(skl2);
+
+	FixParents(sklA);
+	sklA = PrepareForTriming(sklA);
+	sklA->Trim();
+	FixParents(sklB);
+	sklB = PrepareForTriming(sklB);
+	sklB->Trim();
 
 	int nodesA = RecalculateIDs(sklA);
 	int nodesB = RecalculateIDs(sklB);
@@ -42,20 +49,23 @@ std::vector<int> MatchSkeletons(SkeletonNode* skl1, SkeletonNode* skl2) {
 	B->CreateGraphFromSkeleton(sklB, nodesB);
 
 	GraphMatcher gm;
+	gm.ignore = -1;
 	gm.MatchGraphs(A, B);
 	gm.SortFoundMatchings();
+
+	std::map<int, MatchingSkeletonStruct> solution;
+
+	if (gm.bestMatchings.size() > 0) {
+		vector<int> matching = gm.bestMatchings[0];
+		RecreateSkeletonsWithMatching(A, B, matching, solution);
+	}
 
 	delete sklA;
 	delete sklB;
 	delete A;
 	delete B;
 
-	if (gm.bestMatchings.size() > 0) {
-		return gm.bestMatchings[0];
-	}
-
-	vector<int> empty;
-	return empty;
+	return solution;
 }
 
 vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, vector<MatchingStruct>& output, float thresholdPercent, float angleThreshold, float axisAngleThreshold, bool symmetric) {
@@ -104,10 +114,10 @@ vector<SkeletonNode* > MatchSkeletons(vector<SkeletonNode *> skeletons, vector<M
 	vector<USkeletonNode* > skelets;
 	float threshold = AvarageLength(uroot) * thresholdPercent;
 	//CleanUpCount(uroot);
-	Simplify(uroot, threshold);
+	//Simplify(uroot, threshold);
 	for (int i = 0; i < G.size(); i++) {
 		USkeletonNode* toAdd = new USkeletonNode(G[i], uroot, mappings[i]);
-		Simplify(toAdd, threshold);
+		//Simplify(toAdd, threshold);
 		//AddSkeleton(uroot, toAdd, uroot, mappings[i]);
 		AddSkeleton(uroot, toAdd, mappings[i], threshold);
 		skelets.push_back(toAdd);
