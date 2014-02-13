@@ -57,7 +57,9 @@ std::map<int, MatchingSkeletonStruct> MatchSkeletons(SkeletonNode* skl1, Skeleto
 
 	if (gm.bestMatchings.size() > 0) {
 		vector<int> matching = gm.bestMatchings[0];
-		RecreateSkeletonsWithMatching(A, B, matching, solution);
+		vector<USkeletonNode*> outSkls = RecreateSkeletonsWithMatching(A, B, matching, solution);
+		delete outSkls[0];
+		delete outSkls[1];
 	}
 
 	delete sklA;

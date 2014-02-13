@@ -543,7 +543,6 @@ USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root, int from
 	USkeletonNode* croot = root;
 
 	float dist = 0;
-	float maxDist = ge.dist;
 	for (int i = 0; i < ge.positions.size(); i++) {
 		int idx = reverse ? (ge.positions.size() - i - 1) : i;
 		USkeletonNode* node = new USkeletonNode();
@@ -556,7 +555,7 @@ USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root, int from
 
 		croot->nodes.push_back(node);
 
-		out.push_back(NodeDist(node, dist/maxDist));
+		out.push_back(NodeDist(node, dist));
 
 		croot = node;
 	}
@@ -565,6 +564,7 @@ USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root, int from
 }
 
 vector<USkeletonNode*> RecreateSkeletonsWithMatching(SkeletonGraph* A, SkeletonGraph* B, vector<int>& matching, map<int, MatchingSkeletonStruct>& o_map) {
+	//find first matched node prefering branch nodes
 	bool selected = false;
 	int idx = -1;
 	for (int i = 0; i < A->branchNodes.size(); i++) {
@@ -584,7 +584,7 @@ vector<USkeletonNode*> RecreateSkeletonsWithMatching(SkeletonGraph* A, SkeletonG
 		}
 	}
 	if (!selected) return vector<USkeletonNode*>(); //empty matching
-
+	//crate new USkeletonNode
 	int idA = 0;
 	int idB = 0;
 
@@ -596,7 +596,8 @@ vector<USkeletonNode*> RecreateSkeletonsWithMatching(SkeletonGraph* A, SkeletonG
 
 	//o_map.insert(o_map_pair(sklA->id, MatchingSkeletonStruct(sklB->id)));
 	o_map[sklA->id] = MatchingSkeletonStruct(sklB->id);
-
+	//for each matched node form A match with B
+	//unmatched nodes are just added
 	set<int> matched;
 	for (int i = 0; i < A->nodes[idx]->neighborhood.size(); i++) {
 		int sA = A->nodes[idx]->neighborhood[i]->id;
@@ -623,6 +624,7 @@ vector<USkeletonNode*> RecreateSkeletonsWithMatching(SkeletonGraph* A, SkeletonG
 }
 
 void RecreateSkeletonsWithMatching(SkeletonGraph* A, DataStruct dA, SkeletonGraph* B, DataStruct dB, vector<int>& matching, map<int, MatchingSkeletonStruct>& o_map) {
+	//create links stored in edges
 	GraphEdge eA;
 	A->AreNeighbors(dA.ignoreID, dA.selectID, eA);
 	vector<NodeDist> outA;
@@ -632,7 +634,7 @@ void RecreateSkeletonsWithMatching(SkeletonGraph* A, DataStruct dA, SkeletonGrap
 	B->AreNeighbors(dB.ignoreID, dB.selectID, eB);
 	vector<NodeDist> outB;
 	USkeletonNode* rootB = SkeletonNodesFromEdge(eB, dB.root, dB.ignoreID, dB.id, outB);
-
+	//add matched to the end
 	USkeletonNode* sklA = new USkeletonNode(A->nodes[dA.selectID], *dA.id);
 	USkeletonNode* sklB = new USkeletonNode(B->nodes[dB.selectID], *dB.id);
 
@@ -644,11 +646,21 @@ void RecreateSkeletonsWithMatching(SkeletonGraph* A, DataStruct dA, SkeletonGrap
 	sklB->parent = rootB;
 	rootB->nodes.push_back(sklB);
 
-	outA.push_back(NodeDist(sklA, 1.0));
-	outB.push_back(NodeDist(sklB, 1.0));
+	float mdA = eA.dist + Magnitude(rootA->point - sklA->point);
+	float mdB = eB.dist + Magnitude(rootB->point - sklB->point);
+	outA.push_back(NodeDist(sklA, mdA));
+	outB.push_back(NodeDist(sklB, mdB));
+	//normalize distances
+	for (int i = 0; i < outA.size(); i++) {
+		outA[i].dist = outA[i].dist / mdA;
+	}
+	for (int i = 0; i < outB.size(); i++) {
+		outB[i].dist = outB[i].dist / mdB;
+	}
 
+	//add to output map
 	AddToMap(outA, outB, o_map);
-
+	//proceed like before matched together, unmatched just add
 	set<int> matched;
 	for (int i = 0; i < A->nodes[dA.selectID]->neighborhood.size(); i++) {
 		int sA = A->nodes[dA.selectID]->neighborhood[i]->id;
@@ -683,7 +695,7 @@ void RecreateSkeleton(SkeletonGraph* G, DataStruct d) {
 	(*d.id)++;
 
 	for (int i = 0; i < G->nodes[d.selectID]->neighborhood.size(); i++) {
-		if (i != d.ignoreID) {
+		if (G->nodes[d.selectID]->neighborhood[i]->id != d.ignoreID) {
 			RecreateSkeleton(G, DataStruct(node, G->nodes[d.selectID]->id, G->nodes[d.selectID]->neighborhood[i]->id, d.id));
 		}
 	}
@@ -692,7 +704,7 @@ void RecreateSkeleton(SkeletonGraph* G, DataStruct d) {
 void AddToMap(vector<NodeDist>& outA, vector<NodeDist>& outB, map<int, MatchingSkeletonStruct>& o_map) {
 	int idx = 0;
 	for (int i = 0; i < outB.size(); i++) {
-		if (outB[i].dist <= outA[idx].dist) {
+		if (outB[i].dist <= outA[idx].dist || idx == outA.size() - 1) {
 			o_map[outA[idx].node->id].matched.push_back(outB[i].node->id);
 		} else {
 			idx++;
