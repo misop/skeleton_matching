@@ -42,6 +42,7 @@
     <Import Project="Boost145.props" />
     <Import Project="tnt.props" />
     <Import Project="mmath_sklnode.props" />
+    <Import Project="glm.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />

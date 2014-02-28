@@ -13,6 +13,7 @@ class USkeletonNode
 {
 public:
 	int id;
+	int oldID;
 	int count;
 	CVector3 point;
 	vector<CVector4> axisAngles;
@@ -75,10 +76,12 @@ void Simplify(USkeletonNode* node, float threshold);
 USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root, int fromID, int *_id);
 USkeletonNode* SkeletonNodesFromEdge(GraphEdge ge, USkeletonNode* root, int fromID, int *_id, vector<NodeDist>& out);
 
-vector<USkeletonNode*> RecreateSkeletonsWithMatching(SkeletonGraph* A, SkeletonGraph* B, vector<int>& matching, map<int, MatchingSkeletonStruct>& o_map);
+vector<USkeletonNode*> RecreateSkeletonsWithMatching(SkeletonGraph* A, SkeletonGraph* B, vector<int>& matching, map<int, MatchingSkeletonStruct>& o_map, float threshold);
 
-void RecreateSkeletonsWithMatching(SkeletonGraph* A, DataStruct dA, SkeletonGraph* B, DataStruct dB, vector<int>& matching, map<int, MatchingSkeletonStruct>& o_map);
+void RecreateSkeletonsWithMatching(SkeletonGraph* A, DataStruct dA, SkeletonGraph* B, DataStruct dB, vector<int>& matching, map<int, MatchingSkeletonStruct>& o_map, float threshold);
 
 void RecreateSkeleton(SkeletonGraph* G, DataStruct d);
 
-void AddToMap(vector<NodeDist>& outA, vector<NodeDist>& outB, map<int, MatchingSkeletonStruct>& o_map);
+void AddToMap(vector<NodeDist>& outA, vector<NodeDist>& outB, map<int, MatchingSkeletonStruct>& o_map, float threshold);
+
+void MapOldIDs(USkeletonNode *root, map<int, int> &oldIDMap);

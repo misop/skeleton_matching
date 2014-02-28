@@ -29,9 +29,11 @@ void SkeletonGraph::CreateGraphFromSkeleton(SkeletonMatchNode* root, int numOfNo
 		SkeletonMatchNode* sklNode = queue.front();
 		queue.pop_front();
 		nodes[id]->point = sklNode->point;
+		nodes[id]->oldID = sklNode->oldID;
 		//edges are not oriented and parent would handle parent edge so we add only child edges
 		for (int i = 0; i < sklNode->nodes.size(); i++) {
 			GraphEdge ge = GraphEdge(sklNode->betweenNodes[i], sklNode->dists[i]);
+			ge.oldIDs = sklNode->oldIDs[i];
 			ge.positions = sklNode->positions[i];
 			ge.fromId = sklNode->id;
 			ge.toId = sklNode->nodes[i]->id;

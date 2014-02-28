@@ -29,7 +29,7 @@ float AvarageLength(USkeletonNode* root) {
 	return length/nodes;
 }
 
-std::map<int, MatchingSkeletonStruct> MatchSkeletons(SkeletonNode* skl1, SkeletonNode* skl2) {
+std::map<int, MatchingSkeletonStruct> MatchSkeletons(SkeletonNode* skl1, SkeletonNode* skl2, float threshold) {
 	SkeletonMatchNode *sklA = new SkeletonMatchNode(skl1);
 	SkeletonMatchNode *sklB = new SkeletonMatchNode(skl2);
 
@@ -57,7 +57,8 @@ std::map<int, MatchingSkeletonStruct> MatchSkeletons(SkeletonNode* skl1, Skeleto
 
 	if (gm.bestMatchings.size() > 0) {
 		vector<int> matching = gm.bestMatchings[0];
-		vector<USkeletonNode*> outSkls = RecreateSkeletonsWithMatching(A, B, matching, solution);
+		vector<USkeletonNode*> outSkls = RecreateSkeletonsWithMatching(A, B, matching, solution, threshold);
+
 		delete outSkls[0];
 		delete outSkls[1];
 	}

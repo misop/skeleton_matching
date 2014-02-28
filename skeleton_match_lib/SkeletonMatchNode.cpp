@@ -6,6 +6,7 @@ SkeletonMatchNode::SkeletonMatchNode (void) : point(CVector3()), id(0), parent(N
 }
 
 SkeletonMatchNode::SkeletonMatchNode (SkeletonNode* node, SkeletonMatchNode* _parent) : id(node->id), point(node->point), parent(parent) {
+	oldID = node->id;
 	for (int i = 0; i < node->nodes.size(); i++) {
 		SkeletonMatchNode* newNode = new SkeletonMatchNode(node->nodes[i], this);
 		nodes.push_back(newNode);
@@ -43,16 +44,19 @@ void SkeletonMatchNode::Trim() {
 	dists.clear();
 	betweenNodes.clear();
 	positions.clear();
+	oldIDs.clear();
 
 	for (int i = 0; i < nodes.size(); i++) {
 		int between = 0;
 		float dist = 0;
 		vector<CVector3> pos;
-		SkeletonMatchNode* node = GetEnd(nodes[i], between, dist, pos);
+		vector<int> ids;
+		SkeletonMatchNode* node = GetEnd(nodes[i], between, dist, pos, ids);
 		nodes[i] = node;
 		betweenNodes.push_back(between);
 		dists.push_back(dist);
 		positions.push_back(pos);
+		oldIDs.push_back(ids);
 	}
 
 	for (int i = 0; i < nodes.size(); i++) {
@@ -63,19 +67,22 @@ void SkeletonMatchNode::Trim() {
 //finds the last link
 SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist) {
 	vector<CVector3> temp;
-	return GetEnd(node, between, dist, temp);
+	vector<int> temp2;
+	return GetEnd(node, between, dist, temp, temp2);
 }
 
-SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist, vector<CVector3> &pos) {
+SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist, vector<CVector3> &pos, vector<int> &oldIDs) {
 	SkeletonMatchNode* search = node;
 	between = 0;
 	dist = 0;
 	pos.clear();
+	oldIDs.clear();
 
 	while (search->nodes.size() == 1) {
 		between++;
 		dist += Magnitude(search->point - search->nodes[0]->point);
 		pos.push_back(search->point);
+		oldIDs.push_back(search->oldID);
 		search = search->nodes[0];
 	}
 

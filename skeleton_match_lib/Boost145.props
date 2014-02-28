@@ -3,10 +3,10 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>C:\Users\mm\Documents\GitHub\skeletor\Lib\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\mm\Documents\SVN\Skeletor\Lib\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup>
-    <LibraryPath>C:\Users\mm\Documents\GitHub\skeletor\Lib\lib\release;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\mm\Documents\SVN\Skeletor\Lib\lib\release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>

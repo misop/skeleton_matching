@@ -12,8 +12,10 @@ class SkeletonMatchNode
 public:
 	CVector3 point;
 	int id;
+	int oldID;
 	vector<float> dists;
 	vector<int> betweenNodes;
+	vector<vector<int> > oldIDs;
 	vector<vector<CVector3> > positions;
 	vector<SkeletonMatchNode*> nodes;
 	SkeletonMatchNode* parent;
@@ -43,7 +45,7 @@ BOOST_CLASS_VERSION(SkeletonMatchNode, 0)
 
 
 SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist);
-SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist, vector<CVector3> &pos);
+SkeletonMatchNode* GetEnd(SkeletonMatchNode* node, int &between, float& dist, vector<CVector3> &pos, vector<int> &oldIDs);
 int RecalculateIDs(SkeletonMatchNode* node);
 int CountNodes(SkeletonMatchNode* node);
 void SwapRoot(SkeletonMatchNode* root, SkeletonMatchNode* node);

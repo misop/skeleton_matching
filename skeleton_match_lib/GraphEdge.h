@@ -8,6 +8,7 @@ struct GraphEdge {
 public:
 	int nodes;
 	float dist;
+	vector<int> oldIDs;
 	vector<CVector3> positions;
 	int fromId;
 	int toId;
